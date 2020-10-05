@@ -523,20 +523,20 @@ public class Board extends JPanel implements ActionListener {
 
     private void loadImages() {
 
-        ghost = new ImageIcon("src/resources/images/ghost.png").getImage();
-        pacman1 = new ImageIcon("src/resources/images/pacman.png").getImage();
-        pacman2up = new ImageIcon("src/resources/images/up1.png").getImage();
-        pacman3up = new ImageIcon("src/resources/images/up2.png").getImage();
-        pacman4up = new ImageIcon("src/resources/images/up3.png").getImage();
-        pacman2down = new ImageIcon("src/resources/images/down1.png").getImage();
-        pacman3down = new ImageIcon("src/resources/images/down2.png").getImage();
-        pacman4down = new ImageIcon("src/resources/images/down3.png").getImage();
-        pacman2left = new ImageIcon("src/resources/images/left1.png").getImage();
-        pacman3left = new ImageIcon("src/resources/images/left2.png").getImage();
-        pacman4left = new ImageIcon("src/resources/images/left3.png").getImage();
-        pacman2right = new ImageIcon("src/resources/images/right1.png").getImage();
-        pacman3right = new ImageIcon("src/resources/images/right2.png").getImage();
-        pacman4right = new ImageIcon("src/resources/images/right3.png").getImage();
+        ghost = new ImageIcon("src/main/resources/images/ghost.png").getImage();
+        pacman1 = new ImageIcon("src/main/resources/images/pacman.png").getImage();
+        pacman2up = new ImageIcon("src/main/resources/images/up1.png").getImage();
+        pacman3up = new ImageIcon("src/main/resources/images/up2.png").getImage();
+        pacman4up = new ImageIcon("src/main/resources/images/up3.png").getImage();
+        pacman2down = new ImageIcon("src/main/resources/images/down1.png").getImage();
+        pacman3down = new ImageIcon("src/main/resources/images/down2.png").getImage();
+        pacman4down = new ImageIcon("src/main/resources/images/down3.png").getImage();
+        pacman2left = new ImageIcon("src/main/resources/images/left1.png").getImage();
+        pacman3left = new ImageIcon("src/main/resources/images/left2.png").getImage();
+        pacman4left = new ImageIcon("src/main/resources/images/left3.png").getImage();
+        pacman2right = new ImageIcon("src/main/resources/images/right1.png").getImage();
+        pacman3right = new ImageIcon("src/main/resources/images/right2.png").getImage();
+        pacman4right = new ImageIcon("src/main/resources/images/right3.png").getImage();
 
     }
 
