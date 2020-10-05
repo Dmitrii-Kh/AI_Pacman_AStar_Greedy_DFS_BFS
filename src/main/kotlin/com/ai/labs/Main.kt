@@ -1,5 +1,11 @@
 package com.ai.labs
 
+import java.awt.EventQueue
+
+
 fun main() {
-    print("Hi!")
+    EventQueue.invokeLater {
+        val ex = Pacman()
+        ex.isVisible = true
+    }
 }
