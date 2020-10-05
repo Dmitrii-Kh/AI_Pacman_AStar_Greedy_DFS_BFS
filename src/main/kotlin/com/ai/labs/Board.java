@@ -56,21 +56,21 @@ public class Board extends JPanel implements ActionListener {
     private int req_dx, req_dy, view_dx, view_dy;
 
     private final short levelData[] = {
-            19, 26, 26, 26, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 22,
-            21, 0, 0, 0, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 20,
-            21, 0, 0, 0, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 20,
-            21, 0, 0, 0, 17, 16, 16, 24, 16, 16, 16, 16, 16, 16, 20,
-            17, 18, 18, 18, 16, 16, 20, 0, 17, 16, 16, 16, 16, 16, 20,
-            17, 16, 16, 16, 16, 16, 20, 0, 17, 16, 16, 16, 16, 24, 20,
-            25, 16, 16, 16, 24, 24, 28, 0, 25, 24, 24, 16, 20, 0, 21,
-            1, 17, 16, 20, 0, 0, 0, 0, 0, 0, 0, 17, 20, 0, 21,
-            1, 17, 16, 16, 18, 18, 22, 0, 19, 18, 18, 16, 20, 0, 21,
-            1, 17, 16, 16, 16, 16, 20, 0, 17, 16, 16, 16, 20, 0, 21,
-            1, 17, 16, 16, 16, 16, 20, 0, 17, 16, 16, 16, 20, 0, 21,
-            1, 17, 16, 16, 16, 16, 16, 18, 16, 16, 16, 16, 20, 0, 21,
-            1, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 20, 0, 21,
-            1, 25, 24, 24, 24, 24, 24, 24, 24, 24, 16, 16, 16, 18, 20,
-            9, 8, 8, 8, 8, 8, 8, 8, 8, 8, 25, 24, 24, 24, 28
+            3,10,10,10,10, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6,
+            5, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 4,
+            5, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 16, 0, 0, 4,
+            5, 0, 0, 0, 1, 0, 0, 8, 0, 0, 0, 0, 0, 0, 4,
+            1, 2, 2, 2, 0, 0, 4, 0, 1, 0, 0, 0, 0, 0, 4,
+            1, 0, 0, 0, 0, 0, 4, 0, 1, 0, 0, 0, 0, 8, 4,
+            9, 0, 0, 0, 8, 8,12, 0, 9, 8, 8, 0, 4, 0, 5,
+            1, 1, 0, 4, 0, 0, 0, 0, 0, 0, 0, 1, 4, 0, 5,
+            1, 1, 0, 0, 2, 2, 6, 0, 3, 2, 2, 0, 4, 0, 5,
+            1, 1, 0, 0, 0, 0, 4, 0, 1, 0, 0, 0, 4, 0, 5,
+            1, 1, 0, 0, 0, 0, 4, 0, 1, 0, 0, 0, 4, 0, 5,
+            1, 1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 4, 0, 5,
+            1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 5,
+            1, 9, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0, 0, 2, 4,
+            9, 8, 8, 8, 8, 8, 8, 8, 8, 8, 9, 8, 8, 8, 12
     };
 
     private final int validSpeeds[] = {1, 2, 3, 4, 6, 8};
@@ -99,7 +99,7 @@ public class Board extends JPanel implements ActionListener {
     private void initVariables() {
 
         screenData = new short[N_BLOCKS * N_BLOCKS];
-        mazeColor = new Color(5, 100, 5);
+        mazeColor = new Color(252, 0, 248);
         d = new Dimension(400, 400);
         ghost_x = new int[MAX_GHOSTS];
         ghost_dx = new int[MAX_GHOSTS];
@@ -144,7 +144,6 @@ public class Board extends JPanel implements ActionListener {
 
             movePacman();
             drawPacman(g2d);
-            moveGhosts(g2d);
             checkMaze();
         }
     }
@@ -507,7 +506,7 @@ public class Board extends JPanel implements ActionListener {
                 random = currentSpeed;
             }
 
-            ghostSpeed[i] = validSpeeds[random];
+           // ghostSpeed[i] = validSpeeds[random];
         }
 
         pacman_x = 7 * BLOCK_SIZE;
