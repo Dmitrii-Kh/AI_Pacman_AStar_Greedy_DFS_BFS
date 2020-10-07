@@ -56,18 +56,18 @@ public class Board extends JPanel implements ActionListener {
     private int req_dx, req_dy, view_dx, view_dy;
 
     private final short levelData[] = {
-            3,10,10,10,10, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6,
-            5, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 4,
-            5, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 16, 0, 0, 4,
-            5, 0, 0, 0, 1, 0, 0, 8, 0, 0, 0, 0, 0, 0, 4,
-            1, 2, 2, 2, 0, 0, 4, 0, 1, 0, 0, 0, 0, 0, 4,
-            1, 0, 0, 0, 0, 0, 4, 0, 1, 0, 0, 0, 0, 8, 4,
-            9, 0, 0, 0, 8, 8,12, 0, 9, 8, 8, 0, 4, 0, 5,
-            1, 1, 0, 4, 0, 0, 0, 0, 0, 0, 0, 1, 4, 0, 5,
-            1, 1, 0, 0, 2, 2, 6, 0, 3, 2, 2, 0, 4, 0, 5,
-            1, 1, 0, 0, 0, 0, 4, 0, 1, 0, 0, 0, 4, 0, 5,
-            1, 1, 0, 0, 0, 0, 4, 0, 1, 0, 0, 0, 4, 0, 5,
-            1, 1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 4, 0, 5,
+            3,10,10,10,10, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6, //0 .. 14
+            5, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 4, //29
+            5, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 16, 0, 0, 4, //44
+            5, 0, 0, 0, 1, 0, 0, 8, 0, 0, 0, 0, 0, 0, 4, //59
+            1, 2, 2, 2, 0, 0, 4, 0, 1, 0, 0, 0, 0, 0, 4, //74
+            1, 0, 0, 0, 0, 0, 4, 0, 1, 0, 0, 0, 0, 8, 4, //89
+            9, 0, 0, 0, 8, 8,12, 0, 9, 8, 8, 0, 4, 0, 5, //104
+            1, 1, 0, 4, 0, 0, 0, 0, 0, 0, 0, 1, 4, 0, 5, //119
+            1, 1, 0, 0, 2, 2, 6, 0, 3, 2, 2, 0, 4, 0, 5, //134
+            1, 1, 0, 0, 0, 0, 4, 0, 1, 0, 0, 0, 4, 0, 5,  //149
+            1, 1, 0, 0, 0, 0, 4, 0, 1, 0, 0, 0, 4, 0, 5, //164
+            1, 1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 4, 0, 5,   //179
             1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 5,
             1, 9, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0, 0, 2, 4,
             9, 8, 8, 8, 8, 8, 8, 8, 8, 8, 9, 8, 8, 8, 12
@@ -155,7 +155,7 @@ public class Board extends JPanel implements ActionListener {
         g2d.setColor(Color.white);
         g2d.drawRect(50, SCREEN_SIZE / 2 - 30, SCREEN_SIZE - 100, 50);
 
-        String s = "Press s to start.";
+        String s = "Press S to start.";
         Font small = new Font("Helvetica", Font.BOLD, 14);
         FontMetrics metr = this.getFontMetrics(small);
 
@@ -195,7 +195,7 @@ public class Board extends JPanel implements ActionListener {
 
         if (finished) {
 
-            score += 50;
+            score += 50000;
 
             if (N_GHOSTS < MAX_GHOSTS) {
                 N_GHOSTS++;
@@ -298,7 +298,27 @@ public class Board extends JPanel implements ActionListener {
         g2d.drawImage(ghost, x, y, this);
     }
 
+    private Point posToCoords(int pos){         //coords start from 0,0
+        int y = 0;
+        int x = pos;
+        while(x - N_BLOCKS >= 0) {
+            y++;
+            x -= N_BLOCKS;
+        }
+        return new Point(x,y);
+    }
+
+    private int pointToPos(Point p){
+        return p.y * N_BLOCKS + p.x;
+    }
+
     private void movePacman() {
+        //check for neighbours --> not walls depending on direction && not visited
+        //if no neighbours --> tp to popped Point on prev iteration (local stack of neighbours?)
+        //pop Point from neighbours
+        //check direction
+        //return coefficients : pacmand_x = req_dx;
+        //                      pacmand_y = req_dy;
 
         int pos;
         short ch;
@@ -310,21 +330,25 @@ public class Board extends JPanel implements ActionListener {
             view_dy = pacmand_y;
         }
 
+
         if (pacman_x % BLOCK_SIZE == 0 && pacman_y % BLOCK_SIZE == 0) {
             pos = pacman_x / BLOCK_SIZE + N_BLOCKS * (int) (pacman_y / BLOCK_SIZE);
             ch = screenData[pos];
 
-            if ((ch & 16) != 0) {
+            //pointToPos(posToCoords(pos));
+
+
+            if ((ch & 16) != 0) {                       //removes a pill (?)
                 screenData[pos] = (short) (ch & 15);
                 score++;
             }
 
-            if (req_dx != 0 || req_dy != 0) {
-                if (!((req_dx == -1 && req_dy == 0 && (ch & 1) != 0)
-                        || (req_dx == 1 && req_dy == 0 && (ch & 4) != 0)
-                        || (req_dx == 0 && req_dy == -1 && (ch & 2) != 0)
-                        || (req_dx == 0 && req_dy == 1 && (ch & 8) != 0))) {
-                    pacmand_x = req_dx;
+            if (req_dx != 0 || req_dy != 0) {  //if not stands still
+                  if (!(   (req_dx == -1 && req_dy == 0  && (ch & 1) != 0)        //l
+                        || (req_dx == 1  && req_dy == 0  && (ch & 4) != 0)        //r
+                        || (req_dx == 0  && req_dy == -1 && (ch & 2) != 0)        //u
+                        || (req_dx == 0  && req_dy == 1  && (ch & 8) != 0) ) ) {  //d
+                    pacmand_x = req_dx;                 //^^^ if no wall -> move
                     pacmand_y = req_dy;
                     view_dx = pacmand_x;
                     view_dy = pacmand_y;
@@ -332,14 +356,15 @@ public class Board extends JPanel implements ActionListener {
             }
 
             // Check for standstill
-            if ((pacmand_x == -1 && pacmand_y == 0 && (ch & 1) != 0)
+                   if ((pacmand_x == -1 && pacmand_y == 0 && (ch & 1) != 0)
                     || (pacmand_x == 1 && pacmand_y == 0 && (ch & 4) != 0)
                     || (pacmand_x == 0 && pacmand_y == -1 && (ch & 2) != 0)
                     || (pacmand_x == 0 && pacmand_y == 1 && (ch & 8) != 0)) {
-                pacmand_x = 0;
+                pacmand_x = 0;              //^^^ if wall -> stand
                 pacmand_y = 0;
             }
         }
+
         pacman_x = pacman_x + PACMAN_SPEED * pacmand_x;
         pacman_y = pacman_y + PACMAN_SPEED * pacmand_y;
     }
