@@ -14,6 +14,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
@@ -55,6 +58,9 @@ public class Board extends JPanel implements ActionListener {
     private int pacman_x, pacman_y, pacmand_x, pacmand_y;
     private int req_dx, req_dy, view_dx, view_dy;
 
+    private Stack<Point> neighbours = new Stack<>();
+    private ArrayList<Integer> visited = new ArrayList<>();
+
     private final short levelData[] = {
             3,10,10,10,10, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6, //0 .. 14
             5, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 4, //29
@@ -66,8 +72,8 @@ public class Board extends JPanel implements ActionListener {
             1, 1, 0, 4, 0, 0, 0, 0, 0, 0, 0, 1, 4, 0, 5, //119
             1, 1, 0, 0, 2, 2, 6, 0, 3, 2, 2, 0, 4, 0, 5, //134
             1, 1, 0, 0, 0, 0, 4, 0, 1, 0, 0, 0, 4, 0, 5,  //149
-            1, 1, 0, 0, 0, 0, 4, 0, 1, 0, 0, 0, 4, 0, 5, //164
-            1, 1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 4, 0, 5,   //179
+            1, 1, 0, 0, 0, 0, 4, 8, 1, 0, 0, 0, 4, 0, 5, //164
+            1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 5,   //179
             1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 5,
             1, 9, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0, 0, 2, 4,
             9, 8, 8, 8, 8, 8, 8, 8, 8, 8, 9, 8, 8, 8, 12
@@ -293,10 +299,8 @@ public class Board extends JPanel implements ActionListener {
         }
     }
 
-    private void drawGhost(Graphics2D g2d, int x, int y) {
+    private void drawGhost(Graphics2D g2d, int x, int y) { g2d.drawImage(ghost, x, y, this); }
 
-        g2d.drawImage(ghost, x, y, this);
-    }
 
     private Point posToCoords(int pos){         //coords start from 0,0
         int y = 0;
@@ -308,11 +312,19 @@ public class Board extends JPanel implements ActionListener {
         return new Point(x,y);
     }
 
+
+    private boolean isVisited(int pos) {        //pos -> index of screenData[]
+        return visited.contains(pos);
+    }
+
+
     private int pointToPos(Point p){
         return p.y * N_BLOCKS + p.x;
     }
+    private int pointToPos(int x, int y) { return y * N_BLOCKS + x; }
 
     private void movePacman() {
+        //                              **ALGO**
         //check for neighbours --> not walls depending on direction && not visited
         //if no neighbours --> tp to popped Point on prev iteration (local stack of neighbours?)
         //pop Point from neighbours
@@ -320,22 +332,44 @@ public class Board extends JPanel implements ActionListener {
         //return coefficients : pacmand_x = req_dx;
         //                      pacmand_y = req_dy;
 
+        int x = pacman_x / BLOCK_SIZE;
+        int y = pacman_y / BLOCK_SIZE;
+
+        int posUp = pointToPos(x, y-1);
+        int posDown = pointToPos(x, y+1);
+        int posLeft = pointToPos(x-1, y);
+        int posRight = pointToPos(x+1, y);
+
+        short up = screenData[posUp];
+        short down = screenData[posDown];
+        short left = screenData[posLeft];
+        short right = screenData[posRight];
+
+        //walls should be made of blocks --> 1+2+4+8 = 15
+        if((up & 8) == 0 && !isVisited(posUp))  neighbours.push(posToCoords(posUp));
+        if((up & 2) == 0 && !isVisited(posDown))  neighbours.push(posToCoords(posDown));
+        if((up & 4) == 0 && !isVisited(posLeft))  neighbours.push(posToCoords(posLeft));
+        if((up & 1) == 0 && !isVisited(posRight))  neighbours.push(posToCoords(posRight));
+
         int pos;
         short ch;
 
         if (req_dx == -pacmand_x && req_dy == -pacmand_y) {
             pacmand_x = req_dx;
             pacmand_y = req_dy;
-            view_dx = pacmand_x;
+            view_dx = pacmand_x;                    // view dx/dy -> used for changing avatar
             view_dy = pacmand_y;
         }
+
+//        if(pacman_x == 11 * BLOCK_SIZE && pacman_y == 11 * BLOCK_SIZE) {
+//            pacman_x = 3 * BLOCK_SIZE ;
+//            pacman_y = 11 * BLOCK_SIZE ;
+//        }
 
 
         if (pacman_x % BLOCK_SIZE == 0 && pacman_y % BLOCK_SIZE == 0) {
             pos = pacman_x / BLOCK_SIZE + N_BLOCKS * (int) (pacman_y / BLOCK_SIZE);
             ch = screenData[pos];
-
-            //pointToPos(posToCoords(pos));
 
 
             if ((ch & 16) != 0) {                       //removes a pill (?)
