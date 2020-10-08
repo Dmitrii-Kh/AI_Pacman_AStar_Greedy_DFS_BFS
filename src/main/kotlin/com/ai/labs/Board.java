@@ -324,12 +324,13 @@ public class Board extends JPanel implements ActionListener {
     private int pointToPos(int x, int y) { return y * N_BLOCKS + x; }
 
     private void movePacman() {
+
         //                              **ALGO**
         //check for neighbours --> not walls depending on direction && not visited
         //if no neighbours --> tp to popped Point on prev iteration (local stack of neighbours?)
         //pop Point from neighbours
-        //check direction
-        //return coefficients : pacmand_x = req_dx;
+        //todo check direction
+        //todo --> return coefficients : pacmand_x = req_dx;
         //                      pacmand_y = req_dy;
 
         int x = pacman_x / BLOCK_SIZE;
@@ -345,11 +346,14 @@ public class Board extends JPanel implements ActionListener {
         short left = screenData[posLeft];
         short right = screenData[posRight];
 
+        //todo local stack
         //walls should be made of blocks --> 1+2+4+8 = 15
         if((up & 8) == 0 && !isVisited(posUp))  neighbours.push(posToCoords(posUp));
         if((up & 2) == 0 && !isVisited(posDown))  neighbours.push(posToCoords(posDown));
         if((up & 4) == 0 && !isVisited(posLeft))  neighbours.push(posToCoords(posLeft));
         if((up & 1) == 0 && !isVisited(posRight))  neighbours.push(posToCoords(posRight));
+
+        //todo pop & append to visited
 
         int pos;
         short ch;
@@ -377,6 +381,7 @@ public class Board extends JPanel implements ActionListener {
                 score++;
             }
 
+            //todo remove
             if (req_dx != 0 || req_dy != 0) {  //if not stands still
                   if (!(   (req_dx == -1 && req_dy == 0  && (ch & 1) != 0)        //l
                         || (req_dx == 1  && req_dy == 0  && (ch & 4) != 0)        //r
@@ -572,6 +577,7 @@ public class Board extends JPanel implements ActionListener {
         pacman_y = 11 * BLOCK_SIZE;
         pacmand_x = 0;
         pacmand_y = 0;
+        //todo append to list visited
         req_dx = 0;
         req_dy = 0;
         view_dx = -1;
