@@ -73,8 +73,8 @@ public class Board extends JPanel implements ActionListener {
             1, 1, 0, 0, 2, 2, 6, 0, 3, 2, 2, 0, 4, 0, 5, //134
             1, 1, 0, 0, 0, 0, 4, 0, 1, 0, 0, 0, 4, 0, 5,  //149
             1, 1, 0, 0, 0, 0, 4, 8, 1, 0, 0, 0, 4, 0, 5, //164
-            1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 5,   //179
-            1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 5,
+            1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0,   //179
+            1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0,
             1, 9, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0, 0, 2, 4,
             9, 8, 8, 8, 8, 8, 8, 8, 8, 8, 9, 8, 8, 8, 12
     };
@@ -323,6 +323,18 @@ public class Board extends JPanel implements ActionListener {
     }
     private int pointToPos(int x, int y) { return y * N_BLOCKS + x; }
 
+    private char checkDirection(int x1, int y1, int x2, int y2){
+        if (x1 == x2){
+            if (y1 < y2){
+                return 'u'; //-right
+            } else return 'd'; //-left
+        } else {
+            if (x1 < x2){
+                return 'r'; // -up
+            } else return 'l'; //-down
+        }
+    }
+
     private void movePacman() {
 
         //                              **ALGO**
@@ -348,12 +360,39 @@ public class Board extends JPanel implements ActionListener {
 
         //todo local stack
         //walls should be made of blocks --> 1+2+4+8 = 15
-        if((up & 8) == 0 && !isVisited(posUp))  neighbours.push(posToCoords(posUp));
-        if((up & 2) == 0 && !isVisited(posDown))  neighbours.push(posToCoords(posDown));
-        if((up & 4) == 0 && !isVisited(posLeft))  neighbours.push(posToCoords(posLeft));
-        if((up & 1) == 0 && !isVisited(posRight))  neighbours.push(posToCoords(posRight));
 
+        if((down & 2) == 0 && !isVisited(posDown))  neighbours.push(posToCoords(posDown));
+        if((up & 8) == 0 && !isVisited(posUp))  neighbours.push(posToCoords(posUp));
+        if((left & 4) == 0 && !isVisited(posLeft))  neighbours.push(posToCoords(posLeft));
+        if((right & 1) == 0 && !isVisited(posRight))  neighbours.push(posToCoords(posRight));
         //todo pop & append to visited
+        Point next = neighbours.pop();
+
+        System.out.println(x + "-x, " + y + "-y");
+        System.out.println(next.x + "-x.next, " + next.y + "-y.next");
+        switch(checkDirection(x,y,next.x,next.y)){
+            case 'r':
+                System.out.println("r");
+                req_dx = 1;
+                req_dy = 0;
+                break;
+            case 'l':
+                System.out.println("l");
+                req_dx = -1;
+                req_dy = 0;
+                break;
+            case 'u':
+                System.out.println("u");
+                req_dx = 0;
+                req_dy = -1;
+                break;
+            case 'd':
+                System.out.println("d");
+                req_dx = 0;
+                req_dy = 1;
+                break;
+        }
+
 
         int pos;
         short ch;
