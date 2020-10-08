@@ -73,8 +73,8 @@ public class Board extends JPanel implements ActionListener {
             1, 1, 0, 0, 2, 2, 6, 0, 3, 2, 2, 0, 4, 0, 5, //134
             1, 1, 0, 0, 0, 0, 4, 0, 1, 0, 0, 0, 4, 0, 5,  //149
             1, 1, 0, 0, 0, 0, 4, 8, 1, 0, 0, 0, 4, 0, 5, //164
-            1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0,   //179
-            1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0,
+            1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 5,   //179
+            1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 5,
             1, 9, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0, 0, 2, 4,
             9, 8, 8, 8, 8, 8, 8, 8, 8, 8, 9, 8, 8, 8, 12
     };
@@ -365,9 +365,10 @@ public class Board extends JPanel implements ActionListener {
         if((up & 8) == 0 && !isVisited(posUp))  neighbours.push(posToCoords(posUp));
         if((left & 4) == 0 && !isVisited(posLeft))  neighbours.push(posToCoords(posLeft));
         if((right & 1) == 0 && !isVisited(posRight))  neighbours.push(posToCoords(posRight));
-        //todo pop & append to visited
-        Point next = neighbours.pop();
 
+        Point next = neighbours.pop();
+        //todo pop & append to visited
+        /*
         System.out.println(x + "-x, " + y + "-y");
         System.out.println(next.x + "-x.next, " + next.y + "-y.next");
         switch(checkDirection(x,y,next.x,next.y)){
@@ -393,7 +394,7 @@ public class Board extends JPanel implements ActionListener {
                 break;
         }
 
-
+*/
         int pos;
         short ch;
 
