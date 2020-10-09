@@ -15,7 +15,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Stack;
 
 import javax.swing.ImageIcon;
@@ -62,21 +61,21 @@ public class Board extends JPanel implements ActionListener {
     private ArrayList<Integer> visited = new ArrayList<>();
 
     private final short levelData[] = {
-            15,15,15,15,15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, //0 .. 14
-            15, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 15, //29
-            15, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 16, 0, 0, 15, //44
-            15, 0, 0, 0, 1, 0, 0, 8, 0, 0, 0, 0, 0, 0, 15, //59
-            15, 2, 2, 2, 0, 0, 4, 0, 1, 0, 0, 0, 0, 0, 15, //74
-            15, 0, 0, 0, 0, 0, 4, 0, 1, 0, 0, 0, 0, 8, 15, //89
-            15, 0, 0, 0, 8, 8,12, 0, 9, 8, 8, 0, 4, 15, 15, //104
-            15, 1, 0, 4, 0, 0, 0, 0, 0, 0, 0, 1, 4, 15, 15, //119
-            15, 1, 0, 0, 2, 2, 6, 0, 3, 2, 2, 0, 4, 15, 15, //134
-            15, 1, 0, 0, 0, 0, 4, 0, 1, 0, 0, 0, 4, 15, 15,  //149
-            15, 1, 0, 0, 0, 0, 4, 8, 1, 0, 0, 0, 4, 15, 15, //164
-            15, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 15,   //179
-            15, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 15, 15,
-            15, 9, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0, 0, 2, 15,
-            15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15
+            15,15,15,15,15,15,15,15,15,15,15,15,15,15, 15, //0 .. 14
+            15, 0, 0, 0, 0, 0, 0, 15, 0, 0, 15, 0, 0, 0, 15,      //29
+            15, 0, 0, 0, 0, 0, 0, 15, 0, 0, 15, 16, 0, 0,15,     //44
+            15, 0, 0, 0, 0, 0, 0, 15, 0, 0, 15, 15, 0, 0, 15,      //59
+            15, 0, 0, 0, 0, 0, 15, 15, 15, 0, 0, 0, 0, 0, 15,      //74
+            15, 0, 0, 0, 0, 0, 15, 15, 15, 0, 0, 0, 0, 8, 15,      //89
+            15, 0, 0, 0, 15, 15,12, 15, 15, 15, 8, 0, 4, 15,15,     //104
+            15, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15, 0, 0, 15,15,     //119
+            15, 0, 0, 0,15,15,15,15,15,15, 15, 0, 4, 15,15,     //134
+            15, 0, 0, 0, 0, 0, 0, 15, 0, 0, 0, 0, 4, 15,15,     //149
+            15, 0, 0, 0, 0, 0, 0, 15, 0, 0, 0, 0, 4, 15,15,     //164
+            15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,15,     //179
+            15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 15,15,
+            15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
+            15,15,15,15,15,15,15,15,15,15,15,15,15,15, 15
     };
 
     private final int validSpeeds[] = {1, 2, 3, 4, 6, 8};
@@ -201,7 +200,7 @@ public class Board extends JPanel implements ActionListener {
 
         if (finished) {
 
-            score += 50000;
+            score += 50;
 
             if (N_GHOSTS < MAX_GHOSTS) {
                 N_GHOSTS++;
@@ -317,7 +316,6 @@ public class Board extends JPanel implements ActionListener {
         return visited.contains(pos);
     }
 
-
     private int pointToPos(Point p){
         return p.y * N_BLOCKS + p.x;
     }
@@ -325,25 +323,24 @@ public class Board extends JPanel implements ActionListener {
 
     private char checkDirection(int x1, int y1, int x2, int y2){
         if (x1 == x2){
-            if (y1 < y2){
-                return 'u'; //-right
-            } else return 'd'; //-left
+            return y1 < y2 ? 'd' : 'u';
         } else {
-            if (x1 < x2){
-                return 'r'; // -up
-            } else return 'l'; //-down
+            return x1 < x2 ? 'r' : 'l';
         }
     }
 
     private void movePacman() {
 
         //                              **ALGO**
-        //check for neighbours --> not walls depending on direction && not visited
+        //check for neighbours --> not walls && not visited
         //if no neighbours --> tp to popped Point on prev iteration (local stack of neighbours?)
         //pop Point from neighbours
         //todo check direction
         //todo --> return coefficients : pacmand_x = req_dx;
-        //                      pacmand_y = req_dy;
+        //                               pacmand_y = req_dy;
+
+        Stack<Point> localN = new Stack<>();
+
 
         int x = pacman_x / BLOCK_SIZE;
         int y = pacman_y / BLOCK_SIZE;
@@ -353,25 +350,39 @@ public class Board extends JPanel implements ActionListener {
         int posLeft = pointToPos(x-1, y);
         int posRight = pointToPos(x+1, y);
 
-        short up = screenData[posUp];
-        short down = screenData[posDown];
-        short left = screenData[posLeft];
-        short right = screenData[posRight];
+        short up = 8, down = 2, left, right;
+        if(y != 0) up = screenData[posUp];
+        if(y != 14) down = screenData[posDown];
+        left = screenData[posLeft];
+        right = screenData[posRight];
 
-        //todo local stack
-        //walls should be made of blocks --> 1+2+4+8 = 15
 
-        if((down & 2) == 0 && !isVisited(posDown))  neighbours.push(posToCoords(posDown));
-        if((up & 8) == 0 && !isVisited(posUp))  neighbours.push(posToCoords(posUp));
-        if((left & 4) == 0 && !isVisited(posLeft))  neighbours.push(posToCoords(posLeft));
-        if((right & 1) == 0 && !isVisited(posRight))  neighbours.push(posToCoords(posRight));
+        if((down & 2) == 0 && !isVisited(posDown))  localN.push(posToCoords(posDown));
+        if((up & 8) == 0 && !isVisited(posUp))  localN.push(posToCoords(posUp));
+        if((left & 4) == 0 && !isVisited(posLeft))  localN.push(posToCoords(posLeft));
+        if((right & 1) == 0 && !isVisited(posRight))  localN.push(posToCoords(posRight));
 
-        //todo pop & append to visited
-        visited.add(pointToPos(x,y));
-        Point next = neighbours.pop();
+        //pop & append to visited
+        visited.add(pointToPos(x, y));
+
+        Point next;
+        if(localN.isEmpty()){
+            next = neighbours.pop();
+            visited.add(pointToPos(next.x, next.y));
+            pacman_x = next.x * BLOCK_SIZE;
+            pacman_y = next.y * BLOCK_SIZE;
+        } else {
+            next = localN.pop();
+            while(!localN.isEmpty()){
+                neighbours.push(localN.pop());
+            }
+        }
+
+
         System.out.println(x + "-x, " + y + "-y");
         System.out.println(next.x + "-x.next, " + next.y + "-y.next");
-        switch(checkDirection(x,y,next.x,next.y)){
+
+        switch(checkDirection(x, y, next.x, next.y)){
             case 'r':
                 System.out.println("r");
                 req_dx = 1;
@@ -394,21 +405,16 @@ public class Board extends JPanel implements ActionListener {
                 break;
         }
 
-
         int pos;
         short ch;
 
         if (req_dx == -pacmand_x && req_dy == -pacmand_y) {
             pacmand_x = req_dx;
             pacmand_y = req_dy;
-            view_dx = pacmand_x;                    // view dx/dy -> used for changing avatar
+            //change avatar
+            view_dx = pacmand_x;
             view_dy = pacmand_y;
         }
-
-//        if(pacman_x == 11 * BLOCK_SIZE && pacman_y == 11 * BLOCK_SIZE) {
-//            pacman_x = 3 * BLOCK_SIZE ;
-//            pacman_y = 11 * BLOCK_SIZE ;
-//        }
 
 
         if (pacman_x % BLOCK_SIZE == 0 && pacman_y % BLOCK_SIZE == 0) {
@@ -416,30 +422,35 @@ public class Board extends JPanel implements ActionListener {
             ch = screenData[pos];
 
 
-            if ((ch & 16) != 0) {                       //removes a pill (?)
+            if ((ch & 16) != 0) {                       //removes a pill
                 screenData[pos] = (short) (ch & 15);
                 score++;
+                inGame = false;
+                visited.clear();
+                neighbours = new Stack<>();
             }
 
-            //todo remove
+            //todo remove ??
             if (req_dx != 0 || req_dy != 0) {  //if not stands still
                   if (!(   (req_dx == -1 && req_dy == 0  && (ch & 1) != 0)        //l
                         || (req_dx == 1  && req_dy == 0  && (ch & 4) != 0)        //r
                         || (req_dx == 0  && req_dy == -1 && (ch & 2) != 0)        //u
                         || (req_dx == 0  && req_dy == 1  && (ch & 8) != 0) ) ) {  //d
-                    pacmand_x = req_dx;                 //^^^ if no wall -> move
+                    pacmand_x = req_dx;
                     pacmand_y = req_dy;
                     view_dx = pacmand_x;
                     view_dy = pacmand_y;
                 }
             }
 
+
+
             // Check for standstill
                    if ((pacmand_x == -1 && pacmand_y == 0 && (ch & 1) != 0)
                     || (pacmand_x == 1 && pacmand_y == 0 && (ch & 4) != 0)
                     || (pacmand_x == 0 && pacmand_y == -1 && (ch & 2) != 0)
                     || (pacmand_x == 0 && pacmand_y == 1 && (ch & 8) != 0)) {
-                pacmand_x = 0;              //^^^ if wall -> stand
+                pacmand_x = 0;
                 pacmand_y = 0;
             }
         }
@@ -615,9 +626,9 @@ public class Board extends JPanel implements ActionListener {
 
         pacman_x = 7 * BLOCK_SIZE;
         pacman_y = 11 * BLOCK_SIZE;
+        //visited.add(pointToPos(7,11));
         pacmand_x = 0;
         pacmand_y = 0;
-        //todo append to list visited
         req_dx = 0;
         req_dy = 0;
         view_dx = -1;
