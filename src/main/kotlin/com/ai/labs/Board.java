@@ -56,8 +56,10 @@ public class Board extends JPanel implements ActionListener {
 
     private int pacman_x, pacman_y, pacmand_x, pacmand_y;
     private int req_dx, req_dy, view_dx, view_dy;
-    private long startTime=0;
-    private long endTime=0;
+    private long startTime = 0;
+    private long endTime = 0;
+    private long initialMemory = 0;
+
     private Stack<Point> neighbours = new Stack<>();
     private ArrayList<Integer> visited = new ArrayList<>();
 
@@ -108,6 +110,10 @@ public class Board extends JPanel implements ActionListener {
         loadImages();
         initVariables();
         initBoard();
+    }
+    private static long getUsedMemory() {
+        Runtime runtime = Runtime.getRuntime();
+        return (runtime.totalMemory() - runtime.freeMemory()) / 1024;
     }
 
     private void initBoard() {
@@ -631,10 +637,13 @@ public class Board extends JPanel implements ActionListener {
     }
 
     private void initLevel() {
-        if(score!=0){
-        endTime = System.currentTimeMillis();
-        System.out.println("Total execution time: " + (endTime - startTime) + "ms");}
+        if(score!=0) {
+            endTime = System.currentTimeMillis();
+            System.out.println("Total execution time: " + (endTime - startTime) + "ms");
+            System.out.println("Total used by program = " + (initialMemory - getUsedMemory()) + " KB");
+        }
         startTime = System.currentTimeMillis();
+        initialMemory = getUsedMemory();
         neighbours.clear();
         visited.clear();
         int i;
