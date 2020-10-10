@@ -60,7 +60,7 @@ public class Board extends JPanel implements ActionListener {
     private Stack<Point> neighbours = new Stack<>();
     private ArrayList<Integer> visited = new ArrayList<>();
 
-//    private final short levelData[] = {
+    //    private final short levelData[] = {
 //            15,15,15,15,15,15,15,15,15,15,15,15,15,15, 15, //0 .. 14
 //            15, 0, 0, 0, 0, 0, 0, 15, 0, 0, 15, 0, 0, 0, 15,      //29
 //            15, 0, 0, 0, 0, 0, 0, 15, 0, 0, 15, 16, 0, 0,15,     //44
@@ -77,23 +77,23 @@ public class Board extends JPanel implements ActionListener {
 //            15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
 //            15,15,15,15,15,15,15,15,15,15,15,15,15,15, 15
 //    };
-private final short levelData[] = {
-        15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, //0 .. 14
-        15, 15, 15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0, 15,      //29   //TODO works only if TABLETKA tyt
-        15, 15, 0, 0, 15, 0, 0, 0, 15, 0, 15, 0, 15, 16, 15,     //44    //TODO esli tyt to ne rabotaet
-        15, 0, 15, 15, 15, 15, 15, 0, 0, 0, 15, 0, 15, 15, 15,      //59
-        15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0, 0, 0, 15,      //74
-        15, 15, 15, 0, 15, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15,      //89
-        15, 0, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 15, 0, 15,     //104
-        15, 0, 15, 15, 15, 15, 15, 15, 15, 0, 15, 15, 15, 0, 15,     //119
-        15, 0, 15, 0, 0, 0, 0, 0, 15, 0, 15, 0, 0, 0, 15,     //134
-        15, 0, 15, 0, 15, 15, 15, 0, 0, 0, 0, 0, 15, 15, 15,     //149
-        15, 0, 15, 0, 0, 0, 15, 0, 15, 15, 15, 0, 15, 0, 15,     //164
-        15, 0, 15, 15, 15, 0, 15, 0, 15, 0, 0, 0, 15, 0, 15,     //179
-        15, 0, 0, 0, 0, 0, 15, 15, 15, 0, 15, 15, 15, 0, 15,
-        15, 15, 15, 15, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
-        15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15
-};
+    private final short levelData[] = {
+            15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, //0 .. 14
+            15, 15, 15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0, 15,      //29   //TODO works only if TABLETKA tyt
+            15, 15, 0, 0, 15, 0, 0, 0, 15, 0, 15, 0, 15, 16, 15,     //44    //TODO esli tyt to ne rabotaet
+            15, 0, 15, 15, 15, 15, 15, 0, 0, 0, 15, 0, 15, 15, 15,      //59
+            15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0, 0, 0, 15,      //74
+            15, 15, 15, 0, 15, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15,      //89
+            15, 0, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 15, 0, 15,     //104
+            15, 0, 15, 15, 15, 15, 15, 15, 15, 0, 15, 15, 15, 0, 15,     //119
+            15, 0, 15, 0, 0, 0, 0, 0, 15, 0, 15, 0, 0, 0, 15,     //134
+            15, 0, 15, 0, 15, 15, 15, 0, 0, 0, 0, 0, 15, 15, 15,     //149
+            15, 0, 15, 0, 0, 0, 15, 0, 15, 15, 15, 0, 15, 0, 15,     //164
+            15, 0, 15, 15, 15, 0, 15, 0, 15, 0, 0, 0, 15, 0, 15,     //179
+            15, 0, 0, 0, 0, 0, 15, 15, 15, 0, 15, 15, 15, 0, 15,
+            15, 15, 15, 15, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
+            15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15
+    };
 
     private final int validSpeeds[] = {1, 2, 3, 4, 6, 8};
     private final int maxSpeed = 6;
@@ -217,7 +217,7 @@ private final short levelData[] = {
 
         if (finished) {
 
-            score += 50;
+
 
             if (N_GHOSTS < MAX_GHOSTS) {
                 N_GHOSTS++;
@@ -457,7 +457,7 @@ private final short levelData[] = {
 
             //todo remove ??
             if (req_dx != 0 || req_dy != 0) {  //if not stands still
-                  if (!(   (req_dx == -1 && req_dy == 0  && (ch & 1) != 0)        //l
+                if (!(   (req_dx == -1 && req_dy == 0  && (ch & 1) != 0)        //l
                         || (req_dx == 1  && req_dy == 0  && (ch & 4) != 0)        //r
                         || (req_dx == 0  && req_dy == -1 && (ch & 2) != 0)        //u
                         || (req_dx == 0  && req_dy == 1  && (ch & 8) != 0) ) ) {  //d
@@ -471,7 +471,7 @@ private final short levelData[] = {
 
 
             // Check for standstill
-                   if ((pacmand_x == -1 && pacmand_y == 0 && (ch & 1) != 0)
+            if ((pacmand_x == -1 && pacmand_y == 0 && (ch & 1) != 0)
                     || (pacmand_x == 1 && pacmand_y == 0 && (ch & 4) != 0)
                     || (pacmand_x == 0 && pacmand_y == -1 && (ch & 2) != 0)
                     || (pacmand_x == 0 && pacmand_y == 1 && (ch & 8) != 0)) {
@@ -618,7 +618,8 @@ private final short levelData[] = {
     }
 
     private void initLevel() {
-
+        neighbours.clear();
+        visited.clear();
         int i;
         for (i = 0; i < N_BLOCKS * N_BLOCKS; i++) {
             screenData[i] = levelData[i];
@@ -646,7 +647,7 @@ private final short levelData[] = {
                 random = currentSpeed;
             }
 
-           // ghostSpeed[i] = validSpeeds[random];
+            // ghostSpeed[i] = validSpeeds[random];
         }
 
         pacman_x = 7 * BLOCK_SIZE;
