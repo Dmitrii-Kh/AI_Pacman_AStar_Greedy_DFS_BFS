@@ -79,8 +79,8 @@ public class Board extends JPanel implements ActionListener {
 //    };
 private final short levelData[] = {
         15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, //0 .. 14
-        15, 15, 15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 16, 15,      //29   //TODO works only if TABLETKA tyt
-        15, 15, 0, 0, 15, 0, 0, 0, 15, 0, 15, 0, 15, 0, 15,     //44    //TODO esli tyt to ne rabotaet
+        15, 15, 15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0, 15,      //29   //TODO works only if TABLETKA tyt
+        15, 15, 0, 0, 15, 0, 0, 0, 15, 0, 15, 0, 15, 16, 15,     //44    //TODO esli tyt to ne rabotaet
         15, 0, 15, 15, 15, 15, 15, 0, 0, 0, 15, 0, 15, 15, 15,      //59
         15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0, 0, 0, 15,      //74
         15, 15, 15, 0, 15, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15,      //89
@@ -356,8 +356,16 @@ private final short levelData[] = {
         //todo --> return coefficients : pacmand_x = req_dx;
         //                               pacmand_y = req_dy;
 
+
         Stack<Point> localN = new Stack<>();
 
+        if ((screenData[pacman_x / BLOCK_SIZE + N_BLOCKS * (int) (pacman_y / BLOCK_SIZE)] & 16) != 0) {                       //TODO Eats TABLETKA
+            screenData[pacman_x / BLOCK_SIZE + N_BLOCKS * (int) (pacman_y / BLOCK_SIZE)] = (short) (screenData[pacman_x / BLOCK_SIZE + N_BLOCKS * (int) (pacman_y / BLOCK_SIZE)] & 15);
+            score++;
+            inGame = false;
+            visited.clear();
+            neighbours = new Stack<>();
+        }
 
         int x = pacman_x / BLOCK_SIZE;
         int y = pacman_y / BLOCK_SIZE;
@@ -381,6 +389,7 @@ private final short levelData[] = {
 
         //pop & append to visited
         visited.add(pointToPos(x, y));
+
 
         Point next;
         if(localN.isEmpty()){
@@ -433,19 +442,18 @@ private final short levelData[] = {
             view_dy = pacmand_y;
         }
 
-
         if (pacman_x % BLOCK_SIZE == 0 && pacman_y % BLOCK_SIZE == 0) {
             pos = pacman_x / BLOCK_SIZE + N_BLOCKS * (int) (pacman_y / BLOCK_SIZE);
             ch = screenData[pos];
 
 
-            if ((ch & 16) != 0) {                       //removes a pill
-                screenData[pos] = (short) (ch & 15);
-                score++;
-                inGame = false;
-                visited.clear();
-                neighbours = new Stack<>();
-            }
+//            if ((ch & 16) != 0) {                       //removes a pill
+//                screenData[pos] = (short) (ch & 15);
+//                score++;
+//                inGame = false;
+//                visited.clear();
+//                neighbours = new Stack<>();
+//            }
 
             //todo remove ??
             if (req_dx != 0 || req_dy != 0) {  //if not stands still
