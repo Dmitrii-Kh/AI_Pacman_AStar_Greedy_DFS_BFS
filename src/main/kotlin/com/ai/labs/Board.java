@@ -56,7 +56,8 @@ public class Board extends JPanel implements ActionListener {
 
     private int pacman_x, pacman_y, pacmand_x, pacmand_y;
     private int req_dx, req_dy, view_dx, view_dy;
-
+    private long startTime=0;
+    private long endTime=0;
     private Stack<Point> neighbours = new Stack<>();
     private ArrayList<Integer> visited = new ArrayList<>();
 
@@ -218,7 +219,6 @@ public class Board extends JPanel implements ActionListener {
         if (finished) {
 
 
-
             if (N_GHOSTS < MAX_GHOSTS) {
                 N_GHOSTS++;
             }
@@ -315,17 +315,19 @@ public class Board extends JPanel implements ActionListener {
         }
     }
 
-    private void drawGhost(Graphics2D g2d, int x, int y) { g2d.drawImage(ghost, x, y, this); }
+    private void drawGhost(Graphics2D g2d, int x, int y) {
+        g2d.drawImage(ghost, x, y, this);
+    }
 
 
-    private Point posToCoords(int pos){         //coords start from 0,0
+    private Point posToCoords(int pos) {         //coords start from 0,0
         int y = 0;
         int x = pos;
-        while(x - N_BLOCKS >= 0) {
+        while (x - N_BLOCKS >= 0) {
             y++;
             x -= N_BLOCKS;
         }
-        return new Point(x,y);
+        return new Point(x, y);
     }
 
 
@@ -333,13 +335,16 @@ public class Board extends JPanel implements ActionListener {
         return visited.contains(pos);
     }
 
-    private int pointToPos(Point p){
+    private int pointToPos(Point p) {
         return p.y * N_BLOCKS + p.x;
     }
-    private int pointToPos(int x, int y) { return y * N_BLOCKS + x; }
 
-    private char checkDirection(int x1, int y1, int x2, int y2){
-        if (x1 == x2){
+    private int pointToPos(int x, int y) {
+        return y * N_BLOCKS + x;
+    }
+
+    private char checkDirection(int x1, int y1, int x2, int y2) {
+        if (x1 == x2) {
             return y1 < y2 ? 'd' : 'u';
         } else {
             return x1 < x2 ? 'r' : 'l';
@@ -370,36 +375,36 @@ public class Board extends JPanel implements ActionListener {
         int x = pacman_x / BLOCK_SIZE;
         int y = pacman_y / BLOCK_SIZE;
 
-        int posUp = pointToPos(x, y-1);
-        int posDown = pointToPos(x, y+1);
-        int posLeft = pointToPos(x-1, y);
-        int posRight = pointToPos(x+1, y);
+        int posUp = pointToPos(x, y - 1);
+        int posDown = pointToPos(x, y + 1);
+        int posLeft = pointToPos(x - 1, y);
+        int posRight = pointToPos(x + 1, y);
 
         short up = 8, down = 2, left, right;
-        if(y != 0) up = screenData[posUp];
-        if(y != 14) down = screenData[posDown];
+        if (y != 0) up = screenData[posUp];
+        if (y != 14) down = screenData[posDown];
         left = screenData[posLeft];
         right = screenData[posRight];
 
 
-        if((down & 2) == 0 && !isVisited(posDown))  localN.push(posToCoords(posDown));
-        if((up & 8) == 0 && !isVisited(posUp))  localN.push(posToCoords(posUp));
-        if((left & 4) == 0 && !isVisited(posLeft))  localN.push(posToCoords(posLeft));
-        if((right & 1) == 0 && !isVisited(posRight))  localN.push(posToCoords(posRight));
+        if ((down & 2) == 0 && !isVisited(posDown)) localN.push(posToCoords(posDown));
+        if ((up & 8) == 0 && !isVisited(posUp)) localN.push(posToCoords(posUp));
+        if ((left & 4) == 0 && !isVisited(posLeft)) localN.push(posToCoords(posLeft));
+        if ((right & 1) == 0 && !isVisited(posRight)) localN.push(posToCoords(posRight));
 
         //pop & append to visited
         visited.add(pointToPos(x, y));
 
 
         Point next;
-        if(localN.isEmpty()){
+        if (localN.isEmpty()) {
             next = neighbours.pop();
             //visited.add(pointToPos(next.x, next.y)); //TODO Esli ne komentit to ne rabotaet posle teleporta
             pacman_x = next.x * BLOCK_SIZE;
             pacman_y = next.y * BLOCK_SIZE;
         } else {
             next = localN.pop();
-            while(!localN.isEmpty()){
+            while (!localN.isEmpty()) {
                 neighbours.push(localN.pop());
             }
         }
@@ -408,7 +413,7 @@ public class Board extends JPanel implements ActionListener {
         System.out.println(x + "-x, " + y + "-y");
         System.out.println(next.x + "-x.next, " + next.y + "-y.next");
 
-        switch(checkDirection(x, y, next.x, next.y)){
+        switch (checkDirection(x, y, next.x, next.y)) {
             case 'r':
                 System.out.println("r");
                 req_dx = 1;
@@ -457,17 +462,16 @@ public class Board extends JPanel implements ActionListener {
 
             //todo remove ??
             if (req_dx != 0 || req_dy != 0) {  //if not stands still
-                if (!(   (req_dx == -1 && req_dy == 0  && (ch & 1) != 0)        //l
-                        || (req_dx == 1  && req_dy == 0  && (ch & 4) != 0)        //r
-                        || (req_dx == 0  && req_dy == -1 && (ch & 2) != 0)        //u
-                        || (req_dx == 0  && req_dy == 1  && (ch & 8) != 0) ) ) {  //d
+                if (!((req_dx == -1 && req_dy == 0 && (ch & 1) != 0)        //l
+                        || (req_dx == 1 && req_dy == 0 && (ch & 4) != 0)        //r
+                        || (req_dx == 0 && req_dy == -1 && (ch & 2) != 0)        //u
+                        || (req_dx == 0 && req_dy == 1 && (ch & 8) != 0))) {  //d
                     pacmand_x = req_dx;
                     pacmand_y = req_dy;
                     view_dx = pacmand_x;
                     view_dy = pacmand_y;
                 }
             }
-
 
 
             // Check for standstill
@@ -618,6 +622,10 @@ public class Board extends JPanel implements ActionListener {
     }
 
     private void initLevel() {
+        if(score!=0){
+        endTime = System.currentTimeMillis();
+        System.out.println("Total execution time: " + (endTime - startTime) + "ms");}
+        startTime = System.currentTimeMillis();
         neighbours.clear();
         visited.clear();
         int i;
@@ -626,6 +634,7 @@ public class Board extends JPanel implements ActionListener {
         }
 
         continueLevel();
+
     }
 
     private void continueLevel() {
