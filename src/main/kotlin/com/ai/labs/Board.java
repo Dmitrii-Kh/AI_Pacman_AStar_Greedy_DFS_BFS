@@ -79,8 +79,8 @@ public class Board extends JPanel implements ActionListener {
 //    };
 private final short levelData[] = {
         15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, //0 .. 14
-        15, 15, 15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 15, 16, 15,      //29
-        15, 15, 0, 0, 15, 0, 0, 0, 15, 0, 15, 0, 0, 0, 15,     //44
+        15, 15, 15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 16, 15,      //29   //TODO works only if TABLETKA tyt
+        15, 15, 0, 0, 15, 0, 0, 0, 15, 0, 15, 0, 15, 0, 15,     //44    //TODO esli tyt to ne rabotaet
         15, 0, 15, 15, 15, 15, 15, 0, 0, 0, 15, 0, 15, 15, 15,      //59
         15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0, 0, 0, 15,      //74
         15, 15, 15, 0, 15, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15,      //89
@@ -385,7 +385,7 @@ private final short levelData[] = {
         Point next;
         if(localN.isEmpty()){
             next = neighbours.pop();
-            visited.add(pointToPos(next.x, next.y));
+            //visited.add(pointToPos(next.x, next.y)); //TODO Esli ne komentit to ne rabotaet posle teleporta
             pacman_x = next.x * BLOCK_SIZE;
             pacman_y = next.y * BLOCK_SIZE;
         } else {
