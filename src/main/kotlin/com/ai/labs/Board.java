@@ -15,7 +15,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
@@ -364,6 +366,10 @@ public class Board extends JPanel implements ActionListener {
             screenData[pos] = (short) (ch & 15);        //eats a pill
             score++;
             inGame = false;
+            List<Integer> listWithoutDuplicates = visited.stream()
+                    .distinct()
+                    .collect(Collectors.toList());
+            System.out.println("Amount of steps = " + listWithoutDuplicates.size());
             visited.clear();
             neighbours = new Stack<>();
         }
