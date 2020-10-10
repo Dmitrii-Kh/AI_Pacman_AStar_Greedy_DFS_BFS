@@ -346,6 +346,19 @@ public class Board extends JPanel implements ActionListener {
         }
     }
 
+    private void isPill(int pos){
+        short ch = screenData[pos];
+
+        if ((ch & 16) != 0) {
+            screenData[pos] = (short) (ch & 15);        //eats a pill
+            score++;
+            inGame = false;
+            visited.clear();
+            neighbours = new Stack<>();
+        }
+
+    }
+
     private void movePacman() {
 
         //                              **ALGO**
@@ -363,16 +376,7 @@ public class Board extends JPanel implements ActionListener {
         int y = pacman_y / BLOCK_SIZE;
 
         int pos = pointToPos(x, y);
-        short ch = screenData[pos];
-
-        if ((ch & 16) != 0) {
-            screenData[pos] = (short) (ch & 15);        //eats a pill
-            score++;
-            inGame = false;
-            visited.clear();
-            neighbours = new Stack<>();
-        }
-
+        isPill(pos);
 
         int posUp = pointToPos(x, y-1);
         int posDown = pointToPos(x, y+1);
