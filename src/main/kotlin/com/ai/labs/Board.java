@@ -15,7 +15,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
@@ -58,7 +60,6 @@ public class Board extends JPanel implements ActionListener {
     private int req_dx, req_dy, view_dx, view_dy;
     private long startTime = 0;
     private long endTime = 0;
-    private long initialMemory = 0;
     private Stack<Point> neighbours = new Stack<>();
     private ArrayList<Integer> visited = new ArrayList<>();
 
@@ -82,13 +83,13 @@ public class Board extends JPanel implements ActionListener {
     private final short levelData[] = {
             15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, //0 .. 14
             15, 15, 15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0, 15,      //29   //TODO works only if TABLETKA tyt
-            15, 15, 0, 0, 15, 0, 0, 0, 15, 0, 15, 0, 15, 16, 15,     //44    //TODO esli tyt to ne rabotaet
+            15, 15, 0, 0, 15, 0, 0, 0, 15, 0, 15, 0, 15, 0, 15,     //44    //TODO esli tyt to ne rabotaet
             15, 0, 15, 15, 15, 15, 15, 0, 0, 0, 15, 0, 15, 15, 15,      //59
             15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0, 0, 0, 15,      //74
             15, 15, 15, 0, 15, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15,      //89
             15, 0, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 15, 0, 15,     //104
             15, 0, 15, 15, 15, 15, 15, 15, 15, 0, 15, 15, 15, 0, 15,     //119
-            15, 0, 15, 0, 0, 0, 0, 0, 15, 0, 15, 0, 0, 0, 15,     //134
+            15, 0, 15, 0, 0, 0, 0, 0, 15, 0, 15, 0, 0, 16, 15,     //134
             15, 0, 15, 0, 15, 15, 15, 0, 0, 0, 0, 0, 15, 15, 15,     //149
             15, 0, 15, 0, 0, 0, 15, 0, 15, 15, 15, 0, 15, 0, 15,     //164
             15, 0, 15, 15, 15, 0, 15, 0, 15, 0, 0, 0, 15, 0, 15,     //179
@@ -359,6 +360,10 @@ public class Board extends JPanel implements ActionListener {
             screenData[pos] = (short) (ch & 15);        //eats a pill
             score++;
             inGame = false;
+            List<Integer> listWithoutDuplicates = visited.stream()
+                    .distinct()
+                    .collect(Collectors.toList());
+            System.out.println("Amount of steps = " + listWithoutDuplicates.size());
             visited.clear();
             neighbours = new Stack<>();
         }
@@ -411,12 +416,15 @@ public class Board extends JPanel implements ActionListener {
             next = neighbours.pop();
             pacman_x = next.x * BLOCK_SIZE;
             pacman_y = next.y * BLOCK_SIZE;
+
         } else {
             next = localN.pop();
             while (!localN.isEmpty()) {
                 neighbours.push(localN.pop());
             }
+
         }
+
 
 
         System.out.println(x + "-x, " + y + "-y");
@@ -633,8 +641,8 @@ public class Board extends JPanel implements ActionListener {
 
     private void initLevel() {
         if(score!=0){
-        endTime = System.currentTimeMillis();
-        System.out.println("Total execution time: " + (endTime - startTime) + "ms");}
+            endTime = System.currentTimeMillis();
+            System.out.println("Total execution time: " + (endTime - startTime) + "ms");}
         startTime = System.currentTimeMillis();
         neighbours.clear();
         visited.clear();
