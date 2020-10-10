@@ -623,7 +623,7 @@ public class Board extends JPanel implements ActionListener {
 
     private void initGame() {
 
-        pacsLeft = 3;
+        //pacsLeft = 3;
         score = 0;
         initLevel();
         N_GHOSTS = 6;
