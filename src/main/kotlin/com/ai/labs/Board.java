@@ -1,16 +1,27 @@
 package com.ai.labs;
 
-import javax.swing.*;
-import java.awt.*;
+import org.jetbrains.annotations.NotNull;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Event;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import javax.swing.ImageIcon;
+import javax.swing.JPanel;
+import javax.swing.Timer;
 
 public class Board extends JPanel implements ActionListener, PacmanRunner {
 
@@ -20,10 +31,6 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
     private Image ii;
     private final Color dotColor = new Color(192, 192, 0);
     private Color mazeColor;
-
-    private boolean inGame = false;
-    private boolean dying = false;
-    private boolean showResultPath = false;
 
     private final int BLOCK_SIZE = 24;
     private final int N_BLOCKS = 15;
@@ -44,8 +51,9 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
 
     private long startTime = 0;
     private boolean dfs = true;
+    private final State currState = getCurrState();
 
-   // private Stack<Point> neighbours = new Stack<>();
+    // private Stack<Point> neighbours = new Stack<>();
     private final Deque<Point> neighbours = new ArrayDeque<>();
     private ArrayDeque<Point> resultPath = new ArrayDeque<>();
     private final ArrayList<Integer> visited = new ArrayList<>();
@@ -78,18 +86,16 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
         initVariables();
         initBoard();
     }
-
-    private void initBoard() {
-        addKeyListener(new TAdapter());
-        setFocusable(true);
-        setBackground(Color.black);
+    @NotNull
+    @Override
+    public State getCurrState() {
+        return new State(false, false, false);
     }
 
-//    @NotNull
-//    @Override
-//    public State getCurrState() {
-//       //TODO()
-//    }
+    @Override
+    public void setCurrState(@NotNull State currState) {
+        currState = this.currState;
+    }
 
     @Override
     public void findSon() {
@@ -121,7 +127,6 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
             //pop & append to visited
             visited.add(pointToPos(x, y));
 
-
             if(localN.size() > 1) {
                 resultPath.push(new Point(x, y, true, localN.size()));
             } else if(localN.size() == 1) {
@@ -134,7 +139,6 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
                     while (!resultPath.peek().hasFork) {
                         resultPath.pop();
                     }
-
                     resultPath.peek().numOfNeighbours -= 1;
 
                     if (resultPath.peek().numOfNeighbours == 0) {
@@ -169,6 +173,40 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
             pacman_y = next.y * BLOCK_SIZE;
             findDirection(x, y, next);
         }
+        changePacmanProperties();
+    }
+
+    private void changePacmanProperties() {
+        if (req_dx == -pacmand_x && req_dy == -pacmand_y) {
+            pacmand_x = req_dx;
+            pacmand_y = req_dy;
+            //change avatar
+            view_dx = pacmand_x;
+            view_dy = pacmand_y;
+        }
+        if (pacman_x % BLOCK_SIZE == 0 && pacman_y % BLOCK_SIZE == 0) {
+            pacmand_x = req_dx;
+            pacmand_y = req_dy;
+            view_dx = pacmand_x;
+            view_dy = pacmand_y;
+        }
+        int PACMAN_SPEED = 12;
+        pacman_x = pacman_x + PACMAN_SPEED * pacmand_x;
+        pacman_y = pacman_y + PACMAN_SPEED * pacmand_y;
+    }
+
+    @Override
+    public void pathWeight() {
+        List<Integer> listWithoutDuplicates = visited.stream()
+                .distinct()
+                .collect(Collectors.toList());
+        System.out.println("Amount of steps = " + listWithoutDuplicates.size());
+    }
+
+    private void initBoard() {
+        addKeyListener(new TAdapter());
+        setFocusable(true);
+        setBackground(Color.black);
     }
 
     private void initVariables() {
@@ -183,13 +221,11 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
     @Override
     public void addNotify() {
         super.addNotify();
-
         initState();
     }
 
     private void doAnim() {
         pacAnimCount--;
-
         if (pacAnimCount <= 0) {
             pacAnimCount = PAC_ANIM_DELAY;
             pacmanAnimPos = pacmanAnimPos + pacAnimDir;
@@ -202,9 +238,9 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
     }
 
     private void playGame(Graphics2D g2d) {
-        if (dying) {
+        if (currState.getDying()) {
             death();
-        } else if (showResultPath) {
+        } else if (currState.getShowResultPath()) {
             movePacmanFinal();
             drawPacman(g2d);
             checkMaze();
@@ -268,7 +304,7 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
     private void death() {
         pacsLeft--;
         if (pacsLeft == 0) {
-            inGame = false;
+            currState.setInGame(false);
         }
         continueLevel();
     }
@@ -321,16 +357,17 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
     }
 
     @Override
-    public boolean checkObject(int pos){
+    public boolean checkObject(int pos) {
         short ch = screenData[pos];
 
         if ((ch & 16) != 0) {
             screenData[pos] = (short) (ch & 15);        //eats a pill
             score++;
+
             resultPath.push(posToCoords(pos));
             pacman_x = 7 * BLOCK_SIZE;
             pacman_y = 11 * BLOCK_SIZE;
-            showResultPath = true;
+            currState.setShowResultPath(true);
             pathWeight();
             Runtime runtime = Runtime.getRuntime();
             runtime.gc();
@@ -346,64 +383,19 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
         //check for neighbours --> not walls && not visited
         //if no neighbours --> tp to popped Point on prev iteration (local stack of neighbours?)
         //pop Point from neighbours
+
         findSon();
-        changePacmanProperties();
-    }
 
-    private void changePacmanProperties() {
-        if (req_dx == -pacmand_x && req_dy == -pacmand_y) {
-            pacmand_x = req_dx;
-            pacmand_y = req_dy;
-            //change avatar
-            view_dx = pacmand_x;
-            view_dy = pacmand_y;
-        }
-        if (pacman_x % BLOCK_SIZE == 0 && pacman_y % BLOCK_SIZE == 0) {
-            pacmand_x = req_dx;
-            pacmand_y = req_dy;
-            view_dx = pacmand_x;
-            view_dy = pacmand_y;
-
-        }
-        int PACMAN_SPEED = 12;
-        pacman_x = pacman_x + PACMAN_SPEED * pacmand_x;
-        pacman_y = pacman_y + PACMAN_SPEED * pacmand_y;
     }
 
     private void findDirection(int x, int y, Point next) {
-        System.out.println(x + "-x, " + y + "-y");
-        System.out.println(next.x + "-x.next, " + next.y + "-y.next");
-
-        switch (checkDirection(x, y, next.x, next.y)) {
-            case 'r':
-                System.out.println("r");
-                req_dx = 1;
-                req_dy = 0;
-                break;
-            case 'l':
-                System.out.println("l");
-                req_dx = -1;
-                req_dy = 0;
-                break;
-            case 'u':
-                System.out.println("u");
-                req_dx = 0;
-                req_dy = -1;
-                break;
-            case 'd':
-                System.out.println("d");
-                req_dx = 0;
-                req_dy = 1;
-                break;
-        }
+        findDirections(next, x, y);
     }
-
-
 
     private void movePacmanFinal() {
         if (resultPath.size() == 0) {
-            inGame = false;
-            showResultPath = false;
+            currState.setInGame(false);
+            currState.setShowResultPath(false);
             resultPath = new ArrayDeque<>();
             return;
         }
@@ -414,6 +406,11 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
         int x = pacman_x / BLOCK_SIZE;
         int y = pacman_y / BLOCK_SIZE;
 
+        findDirections(next, x, y);
+        changePacmanProperties();
+    }
+
+    private void findDirections(Point next, int x, int y) {
         System.out.println(x + "-x, " + y + "-y");
         System.out.println(next.x + "-x.next, " + next.y + "-y.next");
 
@@ -439,7 +436,6 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
                 req_dy = 1;
                 break;
         }
-        changePacmanProperties();
     }
 
     private void drawPacman(Graphics2D g2d) {
@@ -532,7 +528,7 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
         req_dy = 0;
         view_dx = -1;
         view_dy = 0;
-        dying = false;
+        currState.setDying(false);
     }
 
     private void loadImages() {
@@ -569,7 +565,7 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
         drawScore(g2d);
         doAnim();
 
-        if (inGame) {
+        if (currState.getInGame()) {
             playGame(g2d);
         } else {
             showIntroScreen(g2d);
@@ -580,21 +576,13 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
         g2d.dispose();
     }
 
-    @Override
-    public void pathWeight() {
-        List<Integer> listWithoutDuplicates = visited.stream()
-                .distinct()
-                .collect(Collectors.toList());
-        System.out.println("Amount of steps = " + listWithoutDuplicates.size());
-    }
-
     class TAdapter extends KeyAdapter {
 
         @Override
         public void keyPressed(KeyEvent e) {
             int key = e.getKeyCode();
 
-            if (inGame) {
+            if (currState.getInGame()) {
                 if (key == KeyEvent.VK_LEFT) {
                     req_dx = -1;
                     req_dy = 0;
@@ -608,7 +596,7 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
                     req_dx = 0;
                     req_dy = 1;
                 } else if (key == KeyEvent.VK_ESCAPE && timer.isRunning()) {
-                    inGame = false;
+                    currState.setInGame(false);
                 } else if (key == KeyEvent.VK_PAUSE) {
                     if (timer.isRunning()) {
                         timer.stop();
@@ -619,12 +607,12 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
             } else {
                 if (key == 'b' || key == 'B') {
                     dfs = false;
-                    inGame = true;
+                    currState.setInGame(true);
                     initState();
                 }
                 if (key == 'd' || key == 'D') {
                     dfs = true;
-                    inGame = true;
+                    currState.setInGame(true);
                     initState();
                 }
             }

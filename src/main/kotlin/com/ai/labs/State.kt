@@ -1,5 +1,4 @@
 package com.ai.labs
 
-enum class State {
-    DYING, INGAME, SHOWRESULTPATH
+data class State(var dying : Boolean, var inGame : Boolean, var showResultPath : Boolean) {
 }

@@ -1,7 +1,7 @@
 package com.ai.labs
 
 interface PacmanRunner {
-//    val currState : State
+    var currState : State
 
     fun initState()
     fun findSon()
