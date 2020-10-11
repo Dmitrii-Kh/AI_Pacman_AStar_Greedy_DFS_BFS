@@ -14,9 +14,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.swing.ImageIcon;
@@ -53,24 +51,46 @@ public class Board extends JPanel implements ActionListener {
     private int req_dx, req_dy, view_dx, view_dy;
 
     private long startTime = 0;
+
+    private long endTime = 0;
+    private boolean dfs = true;
     private long initialMemory = 0;
 
-    private Stack<Point> neighbours = new Stack<>();
-    private final ArrayList<Integer> visited = new ArrayList<>();
+   // private Stack<Point> neighbours = new Stack<>();
+    private Deque<Point> neighbours = new ArrayDeque<>();
+    private ArrayList<Integer> visited = new ArrayList<>();
 
-    private final short[] levelData = {
-            15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-            15, 15, 15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0, 15,
-            15, 15, 0, 0, 15, 0, 0, 0, 15, 0, 15, 0, 15, 16, 15,
-            15, 0, 15, 15, 15, 15, 15, 0, 0, 0, 15, 0, 15, 15, 15,
-            15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0, 0, 0, 15,
-            15, 15, 15, 0, 15, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-            15, 0, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 15, 0, 15,
-            15, 0, 15, 15, 15, 15, 15, 15, 15, 0, 15, 15, 15, 0, 15,
-            15, 0, 15, 0, 0, 0, 0, 0, 15, 0, 15, 0, 0, 0, 15,
-            15, 0, 15, 0, 15, 15, 15, 0, 0, 0, 0, 0, 15, 15, 15,
-            15, 0, 15, 0, 0, 0, 15, 0, 15, 15, 15, 0, 15, 0, 15,
-            15, 0, 15, 15, 15, 0, 15, 0, 15, 0, 0, 0, 15, 0, 15,
+    //    private final short levelData[] = {
+//            15,15,15,15,15,15,15,15,15,15,15,15,15,15, 15, //0 .. 14
+//            15, 0, 0, 0, 0, 0, 0, 15, 0, 0, 15, 0, 0, 0, 15,      //29
+//            15, 0, 0, 0, 0, 0, 0, 15, 0, 0, 15, 16, 0, 0,15,     //44
+//            15, 0, 0, 0, 0, 0, 0, 15, 0, 0, 15, 15, 0, 0, 15,      //59
+//            15, 0, 0, 0, 0, 0, 15, 15, 15, 0, 0, 0, 0, 0, 15,      //74
+//            15, 0, 0, 0, 0, 0, 15, 15, 15, 0, 0, 0, 0, 8, 15,      //89
+//            15, 0, 0, 0, 15, 15,12, 15, 15, 15, 8, 0, 4, 15,15,     //104
+//            15, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15, 0, 0, 15,15,     //119
+//            15, 0, 0, 0,15,15,15,15,15,15, 15, 0, 4, 15,15,     //134
+//            15, 0, 0, 0, 0, 0, 0, 15, 0, 0, 0, 0, 4, 15,15,     //149
+//            15, 0, 0, 0, 0, 0, 0, 15, 0, 0, 0, 0, 4, 15,15,     //164
+//            15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,15,     //179
+//            15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 15,15,
+//            15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
+//            15,15,15,15,15,15,15,15,15,15,15,15,15,15, 15
+//    };
+    private final short levelData[] = {
+            15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, //0 .. 14
+            15, 15, 15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0, 15,      //29   //TODO works only if TABLETKA tyt
+            15, 15, 0, 0, 15, 0, 0, 0, 15, 0, 15, 0, 15, 16, 15,     //44    //TODO esli tyt to ne rabotaet
+            15, 0, 15, 15, 15, 15, 15, 0, 0, 0, 15, 0, 15, 15, 15,      //59
+            15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0, 0, 0, 15,      //74
+            15, 15, 15, 0, 15, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15,      //89
+            15, 0, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 15, 0, 15,     //104
+            15, 0, 15, 15, 15, 15, 15, 15, 15, 0, 15, 15, 15, 0, 15,     //119
+            15, 0, 15, 0, 0, 0, 0, 0, 15, 0, 15, 0, 0, 0, 15,     //134
+            15, 0, 15, 0, 15, 15, 15, 0, 0, 0, 0, 0, 15, 15, 15,     //149
+            15, 0, 15, 0, 0, 0, 15, 0, 15, 15, 15, 0, 15, 0, 15,     //164
+            15, 0, 15, 15, 15, 0, 15, 0, 15, 0, 0, 0, 15, 0, 15,     //179
+
             15, 0, 0, 0, 0, 0, 15, 15, 15, 0, 15, 15, 15, 0, 15,
             15, 15, 15, 15, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
             15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15
@@ -142,13 +162,15 @@ public class Board extends JPanel implements ActionListener {
         g2d.setColor(Color.white);
         g2d.drawRect(50, SCREEN_SIZE / 2 - 30, SCREEN_SIZE - 100, 50);
 
-        String s = "Press S to start.";
+        String s1 = "Press D to start DFS.";
+        String s2 = "Press B to start BFS.";
         Font small = new Font("Helvetica", Font.BOLD, 14);
         FontMetrics metr = this.getFontMetrics(small);
 
         g2d.setColor(Color.white);
         g2d.setFont(small);
-        g2d.drawString(s, (SCREEN_SIZE - metr.stringWidth(s)) / 2, SCREEN_SIZE / 2);
+        g2d.drawString(s1, (SCREEN_SIZE - metr.stringWidth(s1)) / 2, SCREEN_SIZE / 2 + 10);
+        g2d.drawString(s2, (SCREEN_SIZE - metr.stringWidth(s2)) / 2, SCREEN_SIZE / 2 - 10);
     }
 
     private void drawScore(Graphics2D g) {
@@ -233,8 +255,8 @@ public class Board extends JPanel implements ActionListener {
                     .distinct()
                     .collect(Collectors.toList());
             System.out.println("Amount of steps = " + listWithoutDuplicates.size());
-            visited.clear();
-            neighbours = new Stack<>();
+
+
         }
 
     }
@@ -244,11 +266,11 @@ public class Board extends JPanel implements ActionListener {
         //check for neighbours --> not walls && not visited
         //if no neighbours --> tp to popped Point on prev iteration (local stack of neighbours?)
         //pop Point from neighbours
-        //todo check direction
-        //todo --> return coefficients : pacmand_x = req_dx;
-        //                               pacmand_y = req_dy;
 
-        Stack<Point> localN = new Stack<>();
+
+        Deque<Point> localN = new ArrayDeque<>();
+
+
         int x = pacman_x / BLOCK_SIZE;
         int y = pacman_y / BLOCK_SIZE;
 
@@ -266,51 +288,98 @@ public class Board extends JPanel implements ActionListener {
         left = screenData[posLeft];
         right = screenData[posRight];
 
-        if ((down & 2) == 0 && isVisited(posDown)) localN.push(posToCoords(posDown));
-        if ((up & 8) == 0 && isVisited(posUp)) localN.push(posToCoords(posUp));
-        if ((left & 4) == 0 && isVisited(posLeft)) localN.push(posToCoords(posLeft));
-        if ((right & 1) == 0 && isVisited(posRight)) localN.push(posToCoords(posRight));
 
-        //pop & append to visited
-        visited.add(pointToPos(x, y));
+        if(dfs) {
+            if ((down & 2) == 0 && !isVisited(posDown)) localN.push(posToCoords(posDown));
+            if ((up & 8) == 0 && !isVisited(posUp)) localN.push(posToCoords(posUp));
+            if ((left & 4) == 0 && !isVisited(posLeft)) localN.push(posToCoords(posLeft));
+            if ((right & 1) == 0 && !isVisited(posRight)) localN.push(posToCoords(posRight));
 
-        Point next;
-        if (localN.isEmpty()) {
-            next = neighbours.pop();
+            //pop & append to visited
+            visited.add(pointToPos(x, y));
+
+
+            Point next;
+            if (localN.isEmpty()) {
+                next = neighbours.pop();
+                pacman_x = next.x * BLOCK_SIZE;
+                pacman_y = next.y * BLOCK_SIZE;
+            } else {
+                next = localN.pop();
+                while (!localN.isEmpty()) {
+                    neighbours.push(localN.pop());
+                }
+            }
+            System.out.println(x + "-x, " + y + "-y");
+            System.out.println(next.x + "-x.next, " + next.y + "-y.next");
+
+            switch (checkDirection(x, y, next.x, next.y)) {
+                case 'r':
+                    System.out.println("r");
+                    req_dx = 1;
+                    req_dy = 0;
+                    break;
+                case 'l':
+                    System.out.println("l");
+                    req_dx = -1;
+                    req_dy = 0;
+                    break;
+                case 'u':
+                    System.out.println("u");
+                    req_dx = 0;
+                    req_dy = -1;
+                    break;
+                case 'd':
+                    System.out.println("d");
+                    req_dx = 0;
+                    req_dy = 1;
+                    break;
+            }
+
+
+        } else {
+
+            if ((down & 2) == 0 && !isVisited(posDown)) neighbours.addLast(posToCoords(posDown));
+            if ((up & 8) == 0 && !isVisited(posUp)) neighbours.addLast(posToCoords(posUp));
+            if ((left & 4) == 0 && !isVisited(posLeft)) neighbours.addLast(posToCoords(posLeft));
+            if ((right & 1) == 0 && !isVisited(posRight)) neighbours.addLast(posToCoords(posRight));
+
+            //pop & append to visited
+            visited.add(pointToPos(x, y));
+
+            Point next;
+            next = neighbours.pollFirst();
             pacman_x = next.x * BLOCK_SIZE;
             pacman_y = next.y * BLOCK_SIZE;
-        } else {
-            next = localN.pop();
-            while (!localN.isEmpty()) {
-                neighbours.push(localN.pop());
+            System.out.println(x + "-x, " + y + "-y");
+            System.out.println(next.x + "-x.next, " + next.y + "-y.next");
+
+            switch (checkDirection(x, y, next.x, next.y)) {
+                case 'r':
+                    System.out.println("r");
+                    req_dx = 1;
+                    req_dy = 0;
+                    break;
+                case 'l':
+                    System.out.println("l");
+                    req_dx = -1;
+                    req_dy = 0;
+                    break;
+                case 'u':
+                    System.out.println("u");
+                    req_dx = 0;
+                    req_dy = -1;
+                    break;
+                case 'd':
+                    System.out.println("d");
+                    req_dx = 0;
+                    req_dy = 1;
+                    break;
             }
+
+
         }
 
-        System.out.println(x + "-x, " + y + "-y");
-        System.out.println(next.x + "-x.next, " + next.y + "-y.next");
-
-        switch (checkDirection(x, y, next.x, next.y)) {
-            case 'r':
-                System.out.println("r");
-                req_dx = 1;
-                req_dy = 0;
-                break;
-            case 'l':
-                System.out.println("l");
-                req_dx = -1;
-                req_dy = 0;
-                break;
-            case 'u':
-                System.out.println("u");
-                req_dx = 0;
-                req_dy = -1;
-                break;
-            case 'd':
-                System.out.println("d");
-                req_dx = 0;
-                req_dy = 1;
-                break;
-        }
         if (req_dx == -pacmand_x && req_dy == -pacmand_y) {
             pacmand_x = req_dx;
             pacmand_y = req_dy;
@@ -498,7 +567,13 @@ public class Board extends JPanel implements ActionListener {
                     }
                 }
             } else {
-                if (key == 's' || key == 'S') {
+                if (key == 'b' || key == 'B') {
+                    dfs = false;
+                    inGame = true;
+                    initGame();
+                }
+                if (key == 'd' || key == 'D') {
+                    dfs = true;
                     inGame = true;
                     initGame();
                 }
