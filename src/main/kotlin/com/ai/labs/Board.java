@@ -290,10 +290,10 @@ public class Board extends JPanel implements ActionListener {
 
 
         if(dfs) {
-            if ((down & 2) == 0 && !isVisited(posDown)) localN.push(posToCoords(posDown));
-            if ((up & 8) == 0 && !isVisited(posUp)) localN.push(posToCoords(posUp));
-            if ((left & 4) == 0 && !isVisited(posLeft)) localN.push(posToCoords(posLeft));
-            if ((right & 1) == 0 && !isVisited(posRight)) localN.push(posToCoords(posRight));
+            if ((down & 2) == 0 && isVisited(posDown)) localN.push(posToCoords(posDown));
+            if ((up & 8) == 0 && isVisited(posUp)) localN.push(posToCoords(posUp));
+            if ((left & 4) == 0 && isVisited(posLeft)) localN.push(posToCoords(posLeft));
+            if ((right & 1) == 0 && isVisited(posRight)) localN.push(posToCoords(posRight));
 
             //pop & append to visited
             visited.add(pointToPos(x, y));
@@ -339,10 +339,10 @@ public class Board extends JPanel implements ActionListener {
 
         } else {
 
-            if ((down & 2) == 0 && !isVisited(posDown)) neighbours.addLast(posToCoords(posDown));
-            if ((up & 8) == 0 && !isVisited(posUp)) neighbours.addLast(posToCoords(posUp));
-            if ((left & 4) == 0 && !isVisited(posLeft)) neighbours.addLast(posToCoords(posLeft));
-            if ((right & 1) == 0 && !isVisited(posRight)) neighbours.addLast(posToCoords(posRight));
+            if ((down & 2) == 0 && isVisited(posDown)) neighbours.addLast(posToCoords(posDown));
+            if ((up & 8) == 0 && isVisited(posUp)) neighbours.addLast(posToCoords(posUp));
+            if ((left & 4) == 0 && isVisited(posLeft)) neighbours.addLast(posToCoords(posLeft));
+            if ((right & 1) == 0 && isVisited(posRight)) neighbours.addLast(posToCoords(posRight));
 
             //pop & append to visited
             visited.add(pointToPos(x, y));
