@@ -1,17 +1,10 @@
 package com.ai.labs
 
-abstract class PacmanRunner() {
-//    init {
-//        println("It's $algorithm!")
-//    }
+interface PacmanRunner {
+//    val currState : State
 
-//    abstract var inGame: Boolean
-//    abstract var dying: Boolean
-
-    // state and currState
-
-    abstract fun findParent()
-    abstract fun checkObject()
-    abstract fun pathWeight()
-
+    fun initState()
+    fun findSon()
+    fun checkObject(pos : Int) : Boolean
+    fun pathWeight()
 }

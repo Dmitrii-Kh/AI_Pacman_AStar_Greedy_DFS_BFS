@@ -1,27 +1,18 @@
 package com.ai.labs;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Event;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Toolkit;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.swing.ImageIcon;
-import javax.swing.JPanel;
-import javax.swing.Timer;
-
-public class Board extends JPanel implements ActionListener {
+public class Board extends JPanel implements ActionListener, PacmanRunner {
 
     private Dimension d;
     private final Font smallFont = new Font("Helvetica", Font.BOLD, 14);
@@ -94,6 +85,92 @@ public class Board extends JPanel implements ActionListener {
         setBackground(Color.black);
     }
 
+//    @NotNull
+//    @Override
+//    public State getCurrState() {
+//       //TODO()
+//    }
+
+    @Override
+    public void findSon() {
+        Deque<Point> localN = new ArrayDeque<>();
+
+        int x = pacman_x / BLOCK_SIZE;
+        int y = pacman_y / BLOCK_SIZE;
+
+        int pos = pointToPos(x, y);
+        if(checkObject(pos)) return;
+
+        int posUp = pointToPos(x, y-1);
+        int posDown = pointToPos(x, y+1);
+        int posLeft = pointToPos(x-1, y);
+        int posRight = pointToPos(x+1, y);
+
+        short up = 8, down = 2, left, right;
+        if (y != 0) up = screenData[posUp];
+        if (y != 14) down = screenData[posDown];
+        left = screenData[posLeft];
+        right = screenData[posRight];
+
+        if(dfs) {
+            if ((down & 2) == 0 && isVisited(posDown)) localN.push(posToCoords(posDown));
+            if ((up & 8) == 0 && isVisited(posUp)) localN.push(posToCoords(posUp));
+            if ((left & 4) == 0 && isVisited(posLeft)) localN.push(posToCoords(posLeft));
+            if ((right & 1) == 0 && isVisited(posRight)) localN.push(posToCoords(posRight));
+
+            //pop & append to visited
+            visited.add(pointToPos(x, y));
+
+
+            if(localN.size() > 1) {
+                resultPath.push(new Point(x, y, true, localN.size()));
+            } else if(localN.size() == 1) {
+                resultPath.push(new Point(x, y));
+            }
+
+            Point next;
+            if (localN.isEmpty()) {
+                while(true) {
+                    while (!resultPath.peek().hasFork) {
+                        resultPath.pop();
+                    }
+
+                    resultPath.peek().numOfNeighbours -= 1;
+
+                    if (resultPath.peek().numOfNeighbours == 0) {
+                        resultPath.pop();
+                    } else {
+                        break;
+                    }
+                }
+                next = neighbours.pop();
+                pacman_x = next.x * BLOCK_SIZE;
+                pacman_y = next.y * BLOCK_SIZE;
+                return;
+            } else {
+                next = localN.pop();
+                while (!localN.isEmpty()) {
+                    neighbours.push(localN.pop());
+                }
+            }
+            findDirection(x, y, next);
+        } else {
+            if ((down & 2) == 0 && isVisited(posDown)) neighbours.addLast(posToCoords(posDown));
+            if ((up & 8) == 0 && isVisited(posUp)) neighbours.addLast(posToCoords(posUp));
+            if ((left & 4) == 0 && isVisited(posLeft)) neighbours.addLast(posToCoords(posLeft));
+            if ((right & 1) == 0 && isVisited(posRight)) neighbours.addLast(posToCoords(posRight));
+
+            //pop & append to visited
+            visited.add(pointToPos(x, y));
+
+            Point next;
+            next = neighbours.pollFirst();
+            pacman_x = next.x * BLOCK_SIZE;
+            pacman_y = next.y * BLOCK_SIZE;
+            findDirection(x, y, next);
+        }
+    }
+
     private void initVariables() {
         screenData = new short[N_BLOCKS * N_BLOCKS];
         mazeColor = new Color(252, 0, 248);
@@ -107,7 +184,7 @@ public class Board extends JPanel implements ActionListener {
     public void addNotify() {
         super.addNotify();
 
-        initGame();
+        initState();
     }
 
     private void doAnim() {
@@ -233,8 +310,7 @@ public class Board extends JPanel implements ActionListener {
         return false;
     }
 
-    private ArrayDeque<Point> removeDuplicates(ArrayDeque<Point> list)
-    {
+    private ArrayDeque<Point> removeDuplicates(ArrayDeque<Point> list) {
         ArrayDeque<Point> newList = new ArrayDeque<>();
         for (Point element : list) {
             if (!contains(newList, element)) {
@@ -244,23 +320,18 @@ public class Board extends JPanel implements ActionListener {
         return newList;
     }
 
-    private boolean isPill(int pos){
+    @Override
+    public boolean checkObject(int pos){
         short ch = screenData[pos];
 
         if ((ch & 16) != 0) {
             screenData[pos] = (short) (ch & 15);        //eats a pill
             score++;
-
-
             resultPath.push(posToCoords(pos));
             pacman_x = 7 * BLOCK_SIZE;
             pacman_y = 11 * BLOCK_SIZE;
             showResultPath = true;
-
-            List<Integer> listWithoutDuplicates = visited.stream()
-                    .distinct()
-                    .collect(Collectors.toList());
-            System.out.println("Amount of steps = " + listWithoutDuplicates.size());
+            pathWeight();
             Runtime runtime = Runtime.getRuntime();
             runtime.gc();
             long memory = runtime.totalMemory() - runtime.freeMemory();
@@ -275,83 +346,11 @@ public class Board extends JPanel implements ActionListener {
         //check for neighbours --> not walls && not visited
         //if no neighbours --> tp to popped Point on prev iteration (local stack of neighbours?)
         //pop Point from neighbours
+        findSon();
+        changePacmanProperties();
+    }
 
-        Deque<Point> localN = new ArrayDeque<>();
-
-        int x = pacman_x / BLOCK_SIZE;
-        int y = pacman_y / BLOCK_SIZE;
-
-        int pos = pointToPos(x, y);
-        if(isPill(pos)) return;
-
-        int posUp = pointToPos(x, y-1);
-        int posDown = pointToPos(x, y+1);
-        int posLeft = pointToPos(x-1, y);
-        int posRight = pointToPos(x+1, y);
-
-        short up = 8, down = 2, left, right;
-        if (y != 0) up = screenData[posUp];
-        if (y != 14) down = screenData[posDown];
-        left = screenData[posLeft];
-        right = screenData[posRight];
-
-        if(dfs) {
-            if ((down & 2) == 0 && isVisited(posDown)) localN.push(posToCoords(posDown));
-            if ((up & 8) == 0 && isVisited(posUp)) localN.push(posToCoords(posUp));
-            if ((left & 4) == 0 && isVisited(posLeft)) localN.push(posToCoords(posLeft));
-            if ((right & 1) == 0 && isVisited(posRight)) localN.push(posToCoords(posRight));
-
-            //pop & append to visited
-            visited.add(pointToPos(x, y));
-
-
-            if(localN.size() > 1) {
-                resultPath.push(new Point(x, y, true, localN.size()));
-            } else if(localN.size() == 1) {
-                resultPath.push(new Point(x, y));
-            }
-
-            Point next;
-            if (localN.isEmpty()) {
-                while(true) {
-                    while (!resultPath.peek().hasFork) {
-                        resultPath.pop();
-                    }
-
-                    resultPath.peek().numOfNeighbours -= 1;
-
-                    if (resultPath.peek().numOfNeighbours == 0) {
-                        resultPath.pop();
-                    } else {
-                        break;
-                    }
-                }
-                next = neighbours.pop();
-                pacman_x = next.x * BLOCK_SIZE;
-                pacman_y = next.y * BLOCK_SIZE;
-                return;
-            } else {
-                next = localN.pop();
-                while (!localN.isEmpty()) {
-                    neighbours.push(localN.pop());
-                }
-            }
-            findDirection(x, y, next);
-        } else {
-            if ((down & 2) == 0 && isVisited(posDown)) neighbours.addLast(posToCoords(posDown));
-            if ((up & 8) == 0 && isVisited(posUp)) neighbours.addLast(posToCoords(posUp));
-            if ((left & 4) == 0 && isVisited(posLeft)) neighbours.addLast(posToCoords(posLeft));
-            if ((right & 1) == 0 && isVisited(posRight)) neighbours.addLast(posToCoords(posRight));
-
-            //pop & append to visited
-            visited.add(pointToPos(x, y));
-
-            Point next;
-            next = neighbours.pollFirst();
-            pacman_x = next.x * BLOCK_SIZE;
-            pacman_y = next.y * BLOCK_SIZE;
-            findDirection(x, y, next);
-        }
+    private void changePacmanProperties() {
         if (req_dx == -pacmand_x && req_dy == -pacmand_y) {
             pacmand_x = req_dx;
             pacmand_y = req_dy;
@@ -440,26 +439,8 @@ public class Board extends JPanel implements ActionListener {
                 req_dy = 1;
                 break;
         }
-        if (req_dx == -pacmand_x && req_dy == -pacmand_y) {
-            pacmand_x = req_dx;
-            pacmand_y = req_dy;
-            //change avatar
-            view_dx = pacmand_x;
-            view_dy = pacmand_y;
-        }
-        if (pacman_x % BLOCK_SIZE == 0 && pacman_y % BLOCK_SIZE == 0) {
-            pacmand_x = req_dx;
-            pacmand_y = req_dy;
-            view_dx = pacmand_x;
-            view_dy = pacmand_y;
-
-        }
-        int PACMAN_SPEED = 12;
-        pacman_x = pacman_x + PACMAN_SPEED * pacmand_x;
-        pacman_y = pacman_y + PACMAN_SPEED * pacmand_y;
+        changePacmanProperties();
     }
-
-
 
     private void drawPacman(Graphics2D g2d) {
         if (view_dx == -1) {
@@ -519,7 +500,8 @@ public class Board extends JPanel implements ActionListener {
         }
     }
 
-    private void initGame() {
+    @Override
+    public void initState() {
         score = 0;
         initLevel();
         currentSpeed = 3;
@@ -598,6 +580,14 @@ public class Board extends JPanel implements ActionListener {
         g2d.dispose();
     }
 
+    @Override
+    public void pathWeight() {
+        List<Integer> listWithoutDuplicates = visited.stream()
+                .distinct()
+                .collect(Collectors.toList());
+        System.out.println("Amount of steps = " + listWithoutDuplicates.size());
+    }
+
     class TAdapter extends KeyAdapter {
 
         @Override
@@ -630,12 +620,12 @@ public class Board extends JPanel implements ActionListener {
                 if (key == 'b' || key == 'B') {
                     dfs = false;
                     inGame = true;
-                    initGame();
+                    initState();
                 }
                 if (key == 'd' || key == 'D') {
                     dfs = true;
                     inGame = true;
-                    initGame();
+                    initState();
                 }
             }
         }
