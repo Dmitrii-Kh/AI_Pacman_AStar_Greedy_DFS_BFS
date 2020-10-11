@@ -51,33 +51,13 @@ public class Board extends JPanel implements ActionListener {
     private int req_dx, req_dy, view_dx, view_dy;
 
     private long startTime = 0;
-
-    private long endTime = 0;
     private boolean dfs = true;
-    private long initialMemory = 0;
 
    // private Stack<Point> neighbours = new Stack<>();
-    private Deque<Point> neighbours = new ArrayDeque<>();
-    private ArrayList<Integer> visited = new ArrayList<>();
+    private final Deque<Point> neighbours = new ArrayDeque<>();
+    private final ArrayList<Integer> visited = new ArrayList<>();
 
-    //    private final short levelData[] = {
-//            15,15,15,15,15,15,15,15,15,15,15,15,15,15, 15, //0 .. 14
-//            15, 0, 0, 0, 0, 0, 0, 15, 0, 0, 15, 0, 0, 0, 15,      //29
-//            15, 0, 0, 0, 0, 0, 0, 15, 0, 0, 15, 16, 0, 0,15,     //44
-//            15, 0, 0, 0, 0, 0, 0, 15, 0, 0, 15, 15, 0, 0, 15,      //59
-//            15, 0, 0, 0, 0, 0, 15, 15, 15, 0, 0, 0, 0, 0, 15,      //74
-//            15, 0, 0, 0, 0, 0, 15, 15, 15, 0, 0, 0, 0, 8, 15,      //89
-//            15, 0, 0, 0, 15, 15,12, 15, 15, 15, 8, 0, 4, 15,15,     //104
-//            15, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15, 0, 0, 15,15,     //119
-//            15, 0, 0, 0,15,15,15,15,15,15, 15, 0, 4, 15,15,     //134
-//            15, 0, 0, 0, 0, 0, 0, 15, 0, 0, 0, 0, 4, 15,15,     //149
-//            15, 0, 0, 0, 0, 0, 0, 15, 0, 0, 0, 0, 4, 15,15,     //164
-//            15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,15,     //179
-//            15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 15,15,
-//            15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
-//            15,15,15,15,15,15,15,15,15,15,15,15,15,15, 15
-//    };
-    private final short levelData[] = {
+    private final short[] levelData = {
             15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, //0 .. 14
             15, 15, 15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0, 15,      //29   //TODO works only if TABLETKA tyt
             15, 15, 0, 0, 15, 0, 0, 0, 15, 0, 15, 0, 15, 16, 15,     //44    //TODO esli tyt to ne rabotaet
@@ -104,10 +84,6 @@ public class Board extends JPanel implements ActionListener {
         loadImages();
         initVariables();
         initBoard();
-    }
-    private static long getUsedMemory() {
-        Runtime runtime = Runtime.getRuntime();
-        return (runtime.totalMemory() - runtime.freeMemory()) / 1024;
     }
 
     private void initBoard() {
@@ -255,8 +231,10 @@ public class Board extends JPanel implements ActionListener {
                     .distinct()
                     .collect(Collectors.toList());
             System.out.println("Amount of steps = " + listWithoutDuplicates.size());
-
-
+            Runtime runtime = Runtime.getRuntime();
+            runtime.gc();
+            long memory = runtime.totalMemory() - runtime.freeMemory();
+            System.out.println("Used memory is bytes: " + memory);
         }
 
     }
@@ -267,9 +245,7 @@ public class Board extends JPanel implements ActionListener {
         //if no neighbours --> tp to popped Point on prev iteration (local stack of neighbours?)
         //pop Point from neighbours
 
-
         Deque<Point> localN = new ArrayDeque<>();
-
 
         int x = pacman_x / BLOCK_SIZE;
         int y = pacman_y / BLOCK_SIZE;
@@ -288,7 +264,6 @@ public class Board extends JPanel implements ActionListener {
         left = screenData[posLeft];
         right = screenData[posRight];
 
-
         if(dfs) {
             if ((down & 2) == 0 && isVisited(posDown)) localN.push(posToCoords(posDown));
             if ((up & 8) == 0 && isVisited(posUp)) localN.push(posToCoords(posUp));
@@ -297,7 +272,6 @@ public class Board extends JPanel implements ActionListener {
 
             //pop & append to visited
             visited.add(pointToPos(x, y));
-
 
             Point next;
             if (localN.isEmpty()) {
@@ -310,35 +284,8 @@ public class Board extends JPanel implements ActionListener {
                     neighbours.push(localN.pop());
                 }
             }
-            System.out.println(x + "-x, " + y + "-y");
-            System.out.println(next.x + "-x.next, " + next.y + "-y.next");
-
-            switch (checkDirection(x, y, next.x, next.y)) {
-                case 'r':
-                    System.out.println("r");
-                    req_dx = 1;
-                    req_dy = 0;
-                    break;
-                case 'l':
-                    System.out.println("l");
-                    req_dx = -1;
-                    req_dy = 0;
-                    break;
-                case 'u':
-                    System.out.println("u");
-                    req_dx = 0;
-                    req_dy = -1;
-                    break;
-                case 'd':
-                    System.out.println("d");
-                    req_dx = 0;
-                    req_dy = 1;
-                    break;
-            }
-
-
+            findDirection(x, y, next);
         } else {
-
             if ((down & 2) == 0 && isVisited(posDown)) neighbours.addLast(posToCoords(posDown));
             if ((up & 8) == 0 && isVisited(posUp)) neighbours.addLast(posToCoords(posUp));
             if ((left & 4) == 0 && isVisited(posLeft)) neighbours.addLast(posToCoords(posLeft));
@@ -351,35 +298,8 @@ public class Board extends JPanel implements ActionListener {
             next = neighbours.pollFirst();
             pacman_x = next.x * BLOCK_SIZE;
             pacman_y = next.y * BLOCK_SIZE;
-            System.out.println(x + "-x, " + y + "-y");
-            System.out.println(next.x + "-x.next, " + next.y + "-y.next");
-
-            switch (checkDirection(x, y, next.x, next.y)) {
-                case 'r':
-                    System.out.println("r");
-                    req_dx = 1;
-                    req_dy = 0;
-                    break;
-                case 'l':
-                    System.out.println("l");
-                    req_dx = -1;
-                    req_dy = 0;
-                    break;
-                case 'u':
-                    System.out.println("u");
-                    req_dx = 0;
-                    req_dy = -1;
-                    break;
-                case 'd':
-                    System.out.println("d");
-                    req_dx = 0;
-                    req_dy = 1;
-                    break;
-            }
-
-
+            findDirection(x, y, next);
         }
-
         if (req_dx == -pacmand_x && req_dy == -pacmand_y) {
             pacmand_x = req_dx;
             pacmand_y = req_dy;
@@ -397,6 +317,34 @@ public class Board extends JPanel implements ActionListener {
         int PACMAN_SPEED = 12;
         pacman_x = pacman_x + PACMAN_SPEED * pacmand_x;
         pacman_y = pacman_y + PACMAN_SPEED * pacmand_y;
+    }
+
+    private void findDirection(int x, int y, Point next) {
+        System.out.println(x + "-x, " + y + "-y");
+        System.out.println(next.x + "-x.next, " + next.y + "-y.next");
+
+        switch (checkDirection(x, y, next.x, next.y)) {
+            case 'r':
+                System.out.println("r");
+                req_dx = 1;
+                req_dy = 0;
+                break;
+            case 'l':
+                System.out.println("l");
+                req_dx = -1;
+                req_dy = 0;
+                break;
+            case 'u':
+                System.out.println("u");
+                req_dx = 0;
+                req_dy = -1;
+                break;
+            case 'd':
+                System.out.println("d");
+                req_dx = 0;
+                req_dy = 1;
+                break;
+        }
     }
 
     private void drawPacman(Graphics2D g2d) {
@@ -467,10 +415,8 @@ public class Board extends JPanel implements ActionListener {
         if(score!=0) {
             long endTime = System.currentTimeMillis();
             System.out.println("Total execution time: " + (endTime - startTime) + "ms");
-            System.out.println("Total used by program = " + (initialMemory - getUsedMemory()) + " KB");
         }
         startTime = System.currentTimeMillis();
-        initialMemory = getUsedMemory();
         neighbours.clear();
         visited.clear();
         int i;
