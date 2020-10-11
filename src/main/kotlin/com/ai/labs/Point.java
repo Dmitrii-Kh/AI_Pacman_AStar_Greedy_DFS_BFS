@@ -30,4 +30,22 @@ public class Point {
         this.hasFork = hasFork;
         this.numOfNeighbours = numOfNeighbours;
     }
+
+    public Point setPrevxy(int prevx, int prevy) {
+        this.prevx = prevx;
+        this.prevy = prevy;
+        return this;
+    }
+
+
+
+    @Override
+    public String toString() {
+        return "Point{" +
+                "x=" + x +
+                ", y=" + y +
+                ", prevx=" + prevx +
+                ", prevy=" + prevy +
+                '}';
+    }
 }
