@@ -32,6 +32,7 @@ public class Board extends JPanel implements ActionListener {
 
     private boolean inGame = false;
     private boolean dying = false;
+    private boolean showResultPath = false;
 
     private final int BLOCK_SIZE = 24;
     private final int N_BLOCKS = 15;
@@ -55,6 +56,7 @@ public class Board extends JPanel implements ActionListener {
 
    // private Stack<Point> neighbours = new Stack<>();
     private final Deque<Point> neighbours = new ArrayDeque<>();
+    private ArrayDeque<Point> resultPath = new ArrayDeque<>();
     private final ArrayList<Integer> visited = new ArrayList<>();
 
     private final short[] levelData = {
@@ -125,6 +127,10 @@ public class Board extends JPanel implements ActionListener {
     private void playGame(Graphics2D g2d) {
         if (dying) {
             death();
+        } else if (showResultPath) {
+            movePacmanFinal();
+            drawPacman(g2d);
+            checkMaze();
         } else {
             movePacman();
             drawPacman(g2d);
@@ -220,13 +226,37 @@ public class Board extends JPanel implements ActionListener {
         }
     }
 
-    private void isPill(int pos){
+    private boolean contains(ArrayDeque<Point> list, Point p){
+        for (Point point:list) {
+            if(point.x == p.x && point.y == p.y) return true;
+        }
+        return false;
+    }
+
+    private ArrayDeque<Point> removeDuplicates(ArrayDeque<Point> list)
+    {
+        ArrayDeque<Point> newList = new ArrayDeque<>();
+        for (Point element : list) {
+            if (!contains(newList, element)) {
+                newList.add(element);
+            }
+        }
+        return newList;
+    }
+
+    private boolean isPill(int pos){
         short ch = screenData[pos];
 
         if ((ch & 16) != 0) {
             screenData[pos] = (short) (ch & 15);        //eats a pill
             score++;
-            inGame = false;
+
+
+            resultPath.push(posToCoords(pos));
+            pacman_x = 7 * BLOCK_SIZE;
+            pacman_y = 11 * BLOCK_SIZE;
+            showResultPath = true;
+
             List<Integer> listWithoutDuplicates = visited.stream()
                     .distinct()
                     .collect(Collectors.toList());
@@ -235,8 +265,9 @@ public class Board extends JPanel implements ActionListener {
             runtime.gc();
             long memory = runtime.totalMemory() - runtime.freeMemory();
             System.out.println("Used memory is bytes: " + memory);
+            return true;
         }
-
+        return false;
     }
 
     private void movePacman() {
@@ -251,7 +282,7 @@ public class Board extends JPanel implements ActionListener {
         int y = pacman_y / BLOCK_SIZE;
 
         int pos = pointToPos(x, y);
-        isPill(pos);
+        if(isPill(pos)) return;
 
         int posUp = pointToPos(x, y-1);
         int posDown = pointToPos(x, y+1);
@@ -273,11 +304,32 @@ public class Board extends JPanel implements ActionListener {
             //pop & append to visited
             visited.add(pointToPos(x, y));
 
+
+            if(localN.size() > 1) {
+                resultPath.push(new Point(x, y, true, localN.size()));
+            } else if(localN.size() == 1) {
+                resultPath.push(new Point(x, y));
+            }
+
             Point next;
             if (localN.isEmpty()) {
+                while(true) {
+                    while (!resultPath.peek().hasFork) {
+                        resultPath.pop();
+                    }
+
+                    resultPath.peek().numOfNeighbours -= 1;
+
+                    if (resultPath.peek().numOfNeighbours == 0) {
+                        resultPath.pop();
+                    } else {
+                        break;
+                    }
+                }
                 next = neighbours.pop();
                 pacman_x = next.x * BLOCK_SIZE;
                 pacman_y = next.y * BLOCK_SIZE;
+                return;
             } else {
                 next = localN.pop();
                 while (!localN.isEmpty()) {
@@ -346,6 +398,68 @@ public class Board extends JPanel implements ActionListener {
                 break;
         }
     }
+
+
+
+    private void movePacmanFinal() {
+        if (resultPath.size() == 0) {
+            inGame = false;
+            showResultPath = false;
+            resultPath = new ArrayDeque<>();
+            return;
+        }
+
+        Point next = resultPath.getLast();
+        resultPath.removeLast();
+
+        int x = pacman_x / BLOCK_SIZE;
+        int y = pacman_y / BLOCK_SIZE;
+
+        System.out.println(x + "-x, " + y + "-y");
+        System.out.println(next.x + "-x.next, " + next.y + "-y.next");
+
+        switch (checkDirection(x, y, next.x, next.y)) {
+            case 'r':
+                System.out.println("r");
+                req_dx = 1;
+                req_dy = 0;
+                break;
+            case 'l':
+                System.out.println("l");
+                req_dx = -1;
+                req_dy = 0;
+                break;
+            case 'u':
+                System.out.println("u");
+                req_dx = 0;
+                req_dy = -1;
+                break;
+            case 'd':
+                System.out.println("d");
+                req_dx = 0;
+                req_dy = 1;
+                break;
+        }
+        if (req_dx == -pacmand_x && req_dy == -pacmand_y) {
+            pacmand_x = req_dx;
+            pacmand_y = req_dy;
+            //change avatar
+            view_dx = pacmand_x;
+            view_dy = pacmand_y;
+        }
+        if (pacman_x % BLOCK_SIZE == 0 && pacman_y % BLOCK_SIZE == 0) {
+            pacmand_x = req_dx;
+            pacmand_y = req_dy;
+            view_dx = pacmand_x;
+            view_dy = pacmand_y;
+
+        }
+        int PACMAN_SPEED = 12;
+        pacman_x = pacman_x + PACMAN_SPEED * pacmand_x;
+        pacman_y = pacman_y + PACMAN_SPEED * pacmand_y;
+    }
+
+
 
     private void drawPacman(Graphics2D g2d) {
         if (view_dx == -1) {
