@@ -56,7 +56,9 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
     // private Stack<Point> neighbours = new Stack<>();
     private final Deque<Point> neighbours = new ArrayDeque<>();
     private ArrayDeque<Point> resultPath = new ArrayDeque<>();
+    private ArrayList<Point> resultRoute = new ArrayList<>();
     private final ArrayList<Integer> visited = new ArrayList<>();
+    private Point goal = new Point(13,2);
 
     private final short[] levelData = {
             15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, //0 .. 14
@@ -173,6 +175,92 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
             pacman_y = next.y * BLOCK_SIZE;
             findDirection(x, y, next);
         }
+        changePacmanProperties();
+    }
+
+    private Stack<Point> prioritizeNeighbours(Stack<Point> s){
+        Map<Point, Integer> map = new HashMap<>();
+        Stack<Point> result = new Stack<>();
+        Point popped;
+        Point smallest;     //shortest distance to the pill i.e. 1st priority
+
+        while(!s.isEmpty()){
+            popped = s.pop();
+            map.put(popped, heuristic(popped));
+        }
+
+        while(!map.isEmpty()){
+            smallest = findSmallest(map);
+            map.remove(smallest);
+            result.push(smallest);
+        }
+        return result;
+    }
+
+    private Point findSmallest(Map<Point, Integer> map) {
+        int smallest = Integer.MAX_VALUE;
+        Point res = new Point(0,0);
+        for(Point p : map.keySet()){
+            if(map.get(p) < smallest){
+                smallest = map.get(p);
+                res = p;
+            }
+        }
+        return res;
+    }
+
+    private Integer heuristic(Point popped) {
+        return Math.abs(popped.x - goal.x) + Math.abs(popped.y - goal.y);
+    }
+
+    public void findSonGreedy(){
+        Stack<Point> localN = new Stack<>();
+
+        int x = pacman_x / BLOCK_SIZE;
+        int y = pacman_y / BLOCK_SIZE;
+
+        int pos = pointToPos(x, y);
+        if(checkObject(pos)) return;
+
+        int posUp = pointToPos(x, y-1);
+        int posDown = pointToPos(x, y+1);
+        int posLeft = pointToPos(x-1, y);
+        int posRight = pointToPos(x+1, y);
+
+        short up = 8, down = 2, left, right;
+        if (y != 0) up = screenData[posUp];
+        if (y != 14) down = screenData[posDown];
+        left = screenData[posLeft];
+        right = screenData[posRight];
+
+            if ((down & 2) == 0 && isVisited(posDown)) localN.push(posToCoords(posDown));
+            if ((up & 8) == 0 && isVisited(posUp)) localN.push(posToCoords(posUp));
+            if ((left & 4) == 0 && isVisited(posLeft)) localN.push(posToCoords(posLeft));
+            if ((right & 1) == 0 && isVisited(posRight)) localN.push(posToCoords(posRight));
+
+            //append to visited
+            visited.add(pointToPos(x, y));
+
+            Point next;
+            if (localN.isEmpty()) {
+                next = neighbours.pop();
+                //resultRoute.add(new Point(next.x, next.y, x, y));
+                pacman_x = next.x * BLOCK_SIZE;
+                pacman_y = next.y * BLOCK_SIZE;
+                return;
+            } else if(localN.size() > 1) {
+                localN = prioritizeNeighbours(localN);
+                while (localN.size() != 1) {
+                    neighbours.push(localN.pop());
+                }
+                next = localN.pop();
+                //resultRoute.add(new Point(next.x, next.y, x, y));
+            } else {
+                next = localN.pop();
+                //resultRoute.add(new Point(next.x, next.y, x, y));
+            }
+
+            findDirection(x, y, next);
         changePacmanProperties();
     }
 
@@ -364,10 +452,19 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
             screenData[pos] = (short) (ch & 15);        //eats a pill
             score++;
 
-            resultPath.push(posToCoords(pos));
+           // resultPath.push(posToCoords(pos));
+//            System.out.println("====================");
+//            for(Point p : resultRoute){
+//                System.out.println("x : " + p.x + " y : " + p.y + " prevx : " + p.prevx + " prevy : " + p.prevy);
+//            }
+//            System.out.println("====================");
+
+            //createResultPath(pacman_x/BLOCK_SIZE, pacman_y/BLOCK_SIZE);
+
             pacman_x = 7 * BLOCK_SIZE;
             pacman_y = 11 * BLOCK_SIZE;
             currState.setShowResultPath(true);
+
             pathWeight();
             Runtime runtime = Runtime.getRuntime();
             runtime.gc();
@@ -378,14 +475,30 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
         return false;
     }
 
+    private void createResultPath(int finalX, int finalY) {
+        //resultPath.push(new Point(finalX, finalY));
+        int x = finalX;
+        int y = finalY;
+        do {
+            for(Point p : resultRoute){
+                if(p.x == x && p.y == y) {
+                    resultPath.push(p);
+                    x = p.prevx;
+                    y = p.prevy;
+                    break;
+                }
+            }
+        } while(x != 7 && y != 11);
+    }
+
     private void movePacman() {
         //                              **ALGO**
         //check for neighbours --> not walls && not visited
         //if no neighbours --> tp to popped Point on prev iteration (local stack of neighbours?)
         //pop Point from neighbours
 
-        findSon();
-
+        //findSon();
+        findSonGreedy();
     }
 
     private void findDirection(int x, int y, Point next) {
@@ -396,12 +509,12 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
         if (resultPath.size() == 0) {
             currState.setInGame(false);
             currState.setShowResultPath(false);
-            resultPath = new ArrayDeque<>();
+            resultPath.clear();
+            resultRoute.clear();
             return;
         }
 
-        Point next = resultPath.getLast();
-        resultPath.removeLast();
+        Point next = resultPath.pop();
 
         int x = pacman_x / BLOCK_SIZE;
         int y = pacman_y / BLOCK_SIZE;
@@ -522,6 +635,7 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
         pacman_x = 7 * BLOCK_SIZE;
         pacman_y = 11 * BLOCK_SIZE;
         //visited.add(pointToPos(7,11));
+        //todo resultRoute.add(new Point(7,11));
         pacmand_x = 0;
         pacmand_y = 0;
         req_dx = 0;
