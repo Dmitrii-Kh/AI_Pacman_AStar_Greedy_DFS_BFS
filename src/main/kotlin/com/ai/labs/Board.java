@@ -88,6 +88,7 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
         initVariables();
         initBoard();
     }
+
     @NotNull
     @Override
     public State getCurrState() {
@@ -107,12 +108,12 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
         int y = pacman_y / BLOCK_SIZE;
 
         int pos = pointToPos(x, y);
-        if(checkObject(pos)) return;
+        if (checkObject(pos)) return;
 
-        int posUp = pointToPos(x, y-1);
-        int posDown = pointToPos(x, y+1);
-        int posLeft = pointToPos(x-1, y);
-        int posRight = pointToPos(x+1, y);
+        int posUp = pointToPos(x, y - 1);
+        int posDown = pointToPos(x, y + 1);
+        int posLeft = pointToPos(x - 1, y);
+        int posRight = pointToPos(x + 1, y);
 
         short up = 8, down = 2, left, right;
         if (y != 0) up = screenData[posUp];
@@ -120,7 +121,7 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
         left = screenData[posLeft];
         right = screenData[posRight];
 
-        if(dfs) {
+        if (dfs) {
             if ((down & 2) == 0 && isVisited(posDown)) localN.push(posToCoords(posDown));
             if ((up & 8) == 0 && isVisited(posUp)) localN.push(posToCoords(posUp));
             if ((left & 4) == 0 && isVisited(posLeft)) localN.push(posToCoords(posLeft));
@@ -129,15 +130,15 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
             //pop & append to visited
             visited.add(pointToPos(x, y));
 
-            if(localN.size() > 1) {
+            if (localN.size() > 1) {
                 resultPath.push(new Point(x, y, true, localN.size()));
-            } else if(localN.size() == 1) {
+            } else if (localN.size() == 1) {
                 resultPath.push(new Point(x, y));
             }
 
             Point next;
             if (localN.isEmpty()) {
-                while(true) {
+                while (true) {
                     while (!resultPath.peek().hasFork) {
                         resultPath.pop();
                     }
@@ -427,9 +428,9 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
         }
     }
 
-    private boolean contains(ArrayDeque<Point> list, Point p){
-        for (Point point:list) {
-            if(point.x == p.x && point.y == p.y) return true;
+    private boolean contains(ArrayDeque<Point> list, Point p) {
+        for (Point point : list) {
+            if (point.x == p.x && point.y == p.y) return true;
         }
         return false;
     }
@@ -524,27 +525,20 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
     }
 
     private void findDirections(Point next, int x, int y) {
-        System.out.println(x + "-x, " + y + "-y");
-        System.out.println(next.x + "-x.next, " + next.y + "-y.next");
-
         switch (checkDirection(x, y, next.x, next.y)) {
             case 'r':
-                System.out.println("r");
                 req_dx = 1;
                 req_dy = 0;
                 break;
             case 'l':
-                System.out.println("l");
                 req_dx = -1;
                 req_dy = 0;
                 break;
             case 'u':
-                System.out.println("u");
                 req_dx = 0;
                 req_dy = -1;
                 break;
             case 'd':
-                System.out.println("d");
                 req_dx = 0;
                 req_dy = 1;
                 break;
@@ -617,7 +611,7 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
     }
 
     private void initLevel() {
-        if(score!=0) {
+        if (score != 0) {
             long endTime = System.currentTimeMillis();
             System.out.println("Total execution time: " + (endTime - startTime) + "ms");
         }
