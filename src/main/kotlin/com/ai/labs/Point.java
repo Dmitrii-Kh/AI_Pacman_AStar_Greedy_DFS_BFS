@@ -5,6 +5,8 @@ public class Point {
     boolean hasFork;
     int numOfNeighbours;
     int prevx, prevy;
+    int distance;
+    int heuristic;
 
     public Point(int x, int y) {
         this.x = x;
@@ -41,11 +43,11 @@ public class Point {
 
     @Override
     public String toString() {
-        return "Point{" +
-                "x=" + x +
-                ", y=" + y +
-                ", prevx=" + prevx +
-                ", prevy=" + prevy +
+        return "Point {" +
+                "x = " + x +
+                ", y = " + y +
+                ", prevx = " + prevx +
+                ", prevy = " + prevy +
                 '}';
     }
 }
