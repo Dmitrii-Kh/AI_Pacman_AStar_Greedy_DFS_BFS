@@ -458,6 +458,11 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
 
     @Override
     public void pathWeight() {
+        if(algorithm == Algo.AStar) {
+            System.out.println("Amount of steps = " + visitedHeuristical.size());
+            return;
+        }
+
         List<Integer> listWithoutDuplicates = visited.stream()
                 .distinct()
                 .collect(Collectors.toList());
@@ -889,28 +894,28 @@ public class Board extends JPanel implements ActionListener, PacmanRunner {
                 }
             } else {
                 switch(key){
-                    case 'b': algorithm = Algo.BFS;
+                    case 'b':
+                    case 'B':
+                        algorithm = Algo.BFS;
                         break;
-                    case 'B': algorithm = Algo.BFS;
+                    case 'd':
+                    case 'D':
+                        algorithm = Algo.DFS;
                         break;
-                    case 'd': algorithm = Algo.DFS;
+                    case 'a':
+                    case 'A':
+                        algorithm = Algo.AStar;
                         break;
-                    case 'D': algorithm = Algo.DFS;
-                        break;
-                    case 'a': algorithm = Algo.AStar;
-                        break;
-                    case 'A': algorithm = Algo.AStar;
-                        break;
-                    case 'g': algorithm = Algo.Greedy;
-                        break;
-                    case 'G': algorithm = Algo.Greedy;
+                    case 'g':
+                    case 'G':
+                        algorithm = Algo.Greedy;
                         break;
                 }
                     currState.setInGame(true);
                     initState();
                 }
             }
-        
+
 
         @Override
         public void keyReleased(KeyEvent e) {
